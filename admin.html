@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Délégués & Émargement | CORA EVENTS</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/jpeg" href="image/cora_event.png.jpeg">
+</head>
+<body style="background: #F8F5EE; min-height: 100vh; position: relative; overflow-x: hidden;">
+    <!-- Barre de Progression de Scroll -->
+    <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+
+    <!-- Orbes Lumineuses Ambiantes -->
+    <div class="ambient-glow glow-gold" style="width: 450px; height: 450px; top: -100px; right: -100px;"></div>
+    <div class="ambient-glow glow-bordeaux" style="width: 500px; height: 500px; bottom: -100px; left: -100px;"></div>
+
+    <!-- En-tête Délégués -->
+    <header class="site-header">
+        <div class="navbar">
+            <a href="index.html" class="brand-link">
+                <img src="image/cora_event.png.jpeg" alt="Logo Cora Events" class="brand-logo-img">
+                <div class="brand-text">
+                    <span class="brand-name">Cora <span>Events</span></span>
+                    <span class="brand-sub">Espace Délégués & Gestion</span>
+                </div>
+            </a>
+
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <a href="index.html" class="btn-secondary" style="padding: 8px 16px; font-size: 13px;">
+                    ← Voir le site
+                </a>
+                <button type="button" id="btnLogout" class="btn-secondary" style="padding: 8px 16px; font-size: 13px; display: none; border-color: #FECACA; color: #DC2626;">
+                    Déconnexion
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="section-wrapper" style="padding: 40px 20px;">
+
+        <!-- ÉCRAN 1 : CONNEXION ADMINISTRATEUR / DÉLÉGUÉ -->
+        <div id="loginView" class="admin-login-box card-spotlight">
+            <div style="margin-bottom: 24px;">
+                <img src="image/cora_event.png.jpeg" alt="Logo Cora Events" style="width: 60px; height: 60px; margin: 0 auto 12px; border-radius: 12px; border: 1px solid var(--or);">
+                <h2 style="font-family: 'Outfit', sans-serif; font-size: 24px;">Accès Délégués</h2>
+                <p style="color: var(--texte-muet); font-size: 14px; margin-top: 6px;">
+                    Gestion des réservations & pointage du convoi Petit Paradis 2026.
+                </p>
+            </div>
+
+            <form id="adminLoginForm">
+                <div class="form-field" style="text-align: left;">
+                    <label for="adminEmail">Identifiant / Email</label>
+                    <input type="email" id="adminEmail" class="form-input" style="padding-left: 16px;" placeholder="admin@coraevents.ci" required>
+                </div>
+
+                <div class="form-field" style="text-align: left;">
+                    <label for="adminPassword">Mot de passe</label>
+                    <input type="password" id="adminPassword" class="form-input" style="padding-left: 16px;" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;" id="btnLoginSubmit">
+                    Se connecter à l'espace délégués →
+                </button>
+            </form>
+        </div>
+
+        <!-- ÉCRAN 2 : TABLEAU DE BORD DÉLÉGUÉS -->
+        <div id="dashboardView" style="display: none;">
+            
+            <!-- En-tête visible à l'impression pour le car -->
+            <div class="emargement-print-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 16px;">
+                    <div>
+                        <h1 style="font-size: 20px; font-weight: 900; margin: 0;">CORA EVENTS — FEUILLE D'ÉMARGEMENT DU CONVOI</h1>
+                        <p style="margin: 4px 0 0; font-size: 13px;">Événement : Convoi vers Le Petit Paradis • 13 Décembre 2026 • Départs par Commune</p>
+                    </div>
+                    <div style="text-align: right; font-size: 12px;">
+                        Pointage départ : 08h30 - 10h00<br>
+                        <strong>Liste des passagers inscrits par secteur</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Titre Dashboard & Actions Rapides -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
+                <div>
+                    <h1 style="font-size: 28px; font-weight: 800;">Tableau de Bord & Émargement</h1>
+                    <p style="color: var(--texte-muet); font-size: 14px;">Gestion des passagers pour le convoi du 13 Décembre 2026</p>
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" onclick="window.print()" class="btn-primary" style="padding: 10px 18px; font-size: 13.5px;">
+                        🖨️ Imprimer la feuille d'émargement
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grille des KPIs Statistiques -->
+            <div class="admin-kpi-grid">
+                <div class="kpi-card">
+                    <span>Total Passagers</span>
+                    <strong id="kpiTotalPassagers">0</strong>
+                </div>
+
+                <div class="kpi-card">
+                    <span>Dossiers Enregistrés</span>
+                    <strong id="kpiTotalDossiers">0</strong>
+                </div>
+
+                <div class="kpi-card">
+                    <span>Passagers Confirmés (Payés)</span>
+                    <strong id="kpiConfirmes" style="color: #167A39;">0</strong>
+                </div>
+
+                <div class="kpi-card">
+                    <span>Total Recettes</span>
+                    <strong id="kpiTotalRecettes" style="color: var(--or-fonce);">0 FCFA</strong>
+                </div>
+            </div>
+
+            <!-- Barre d'outils et recherche -->
+            <div class="admin-toolbar">
+                <div class="admin-filters">
+                    <input type="text" id="searchInput" class="admin-search-input" placeholder="🔍 Rechercher par nom, téléphone, #dossier...">
+
+                    <select id="filterCommune" class="admin-select">
+                        <option value="">Toutes les communes</option>
+                        <option value="Anyama">Anyama (Gare)</option>
+                        <option value="Bingerville">Bingerville (Feu de Khesse)</option>
+                        <option value="Cocody">Cocody (UFHB)</option>
+                        <option value="Marcory">Marcory (Gare Bassam)</option>
+                        <option value="Treichville">Treichville (Gare Bassam)</option>
+                        <option value="Koumassi">Koumassi (Grand Carrefour)</option>
+                        <option value="Port-Bouët">Port-Bouët</option>
+                        <option value="Gonzagueville">Gonzagueville</option>
+                        <option value="Yopougon">Yopougon (Siporex)</option>
+                        <option value="Adjamé">Adjamé (Mairie)</option>
+                        <option value="Abobo">Abobo (Gendarmerie)</option>
+                        <option value="Songon">Songon</option>
+                    </select>
+
+                    <select id="filterStatut" class="admin-select">
+                        <option value="">Tous les statuts</option>
+                        <option value="PAYÉ">Payé / Confirmé</option>
+                        <option value="EN_ATTENTE">En attente</option>
+                    </select>
+                </div>
+
+                <div style="font-size: 13.5px; color: var(--texte-muet); font-weight: 600;" id="tableCounter">
+                    Chargement...
+                </div>
+            </div>
+
+            <!-- Tableau des Réservations -->
+            <div class="admin-table-card">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>N° Dossier</th>
+                            <th>Nom & Prénoms</th>
+                            <th>Téléphone</th>
+                            <th>Commune</th>
+                            <th>Places</th>
+                            <th>Total</th>
+                            <th>Statut</th>
+                            <th>Date Inscription</th>
+                            <th class="btn-print-hide">Actions Délégué</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservationsTableBody">
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 40px; color: var(--texte-muet);">
+                                Chargement des réservations en cours...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="toastNotice" class="toast-notice" role="alert">
+        <span id="toastIcon">✨</span>
+        <span id="toastMsg">Notification</span>
+    </div>
+
+    <!-- Script de gestion admin -->
+    <script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Administration - Petit Paradis</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+    <header class="admin-header">
+
+        <div>
+            <h1>PETIT PARADIS</h1>
+            <p>Tableau de bord administrateur</p>
+        </div>
+
+        <button id="logoutBtn">
+            Déconnexion
+        </button>
+
+    </header>
+
+
+    <main class="admin-container">
+
+        <h2>Tableau de bord</h2>
+
+        <div class="stats">
+
+            <div class="stat-card">
+                <span>Réservations</span>
+                <strong id="totalReservations">0</strong>
+            </div>
+
+            <div class="stat-card">
+                <span>Tickets vendus</span>
+                <strong id="totalTickets">0</strong>
+            </div>
+
+            <div class="stat-card">
+                <span>Montant total</span>
+                <strong id="totalMontant">0 FCFA</strong>
+            </div>
+
+        </div>
+
+
+        <h2>Liste des réservations</h2>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom</th>
+                        <th>Téléphone</th>
+                        <th>Ticket</th>
+                        <th>Quantité</th>
+                        <th>Total</th>
+                        <th>Statut</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="reservationsList">
+
+                    <!-- Les réservations vont apparaître ici -->
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </main>
+
+    <script src="../js/dashboard.js"></script>
+
+</body>
+
+</html>

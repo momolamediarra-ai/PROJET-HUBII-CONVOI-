@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pass d'Embarquement Officiel | Convoi Petit Paradis — CORA EVENTS</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/jpeg" href="image/cora_event.png.jpeg">
+</head>
+<body style="background: #F4EFE6; padding: 30px 16px; position: relative; overflow-x: hidden;">
+    <!-- Barre de Progression de Scroll -->
+    <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+
+    <!-- Orbes Lumineuses Ambiantes -->
+    <div class="ambient-glow glow-gold" style="width: 400px; height: 400px; top: -60px; right: -60px;"></div>
+    <div class="ambient-glow glow-bordeaux" style="width: 450px; height: 450px; bottom: -80px; left: -80px;"></div>
+
+    <!-- Carte Pass d'Embarquement -->
+    <div class="boarding-pass-card card-spotlight">
+        
+        <!-- En-tête du Billet -->
+        <div class="boarding-pass-head">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="image/cora_event.png.jpeg" alt="Logo Cora Events" style="width: 48px; height: 48px; border-radius: 10px; border: 1px solid var(--or);">
+                <div>
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 20px; color: #FFF; margin: 0;">CORA <span>EVENTS</span></h2>
+                    <span style="font-size: 11px; color: var(--or-clair); text-transform: uppercase; letter-spacing: 1px;">Pass Officiel d'Embarquement</span>
+                </div>
+            </div>
+
+            <div style="text-align: right;">
+                <span style="display: block; font-size: 11px; color: var(--texte-clair-muet); text-transform: uppercase;">Dossier N°</span>
+                <strong id="recuDossier" style="font-family: 'Outfit', sans-serif; font-size: 18px; color: var(--or-clair);">#PP-0000</strong>
+            </div>
+        </div>
+
+        <!-- Corps du Billet -->
+        <div class="boarding-pass-body">
+
+            <div id="recuLoading" style="text-align: center; padding: 30px; color: var(--texte-muet);">
+                Chargement de votre pass officiel...
+            </div>
+
+            <div id="recuContainer" style="display: none;">
+                
+                <div class="boarding-grid-2">
+                    <div class="boarding-info-block">
+                        <span>Nom du Passager</span>
+                        <strong id="recuNom">—</strong>
+                    </div>
+                    <div class="boarding-info-block">
+                        <span>Téléphone</span>
+                        <strong id="recuTelephone">—</strong>
+                    </div>
+                </div>
+
+                <div class="boarding-grid-2">
+                    <div class="boarding-info-block">
+                        <span>Commune de départ</span>
+                        <strong id="recuCommune">—</strong>
+                    </div>
+                    <div class="boarding-info-block">
+                        <span>Point de Rassemblement</span>
+                        <strong id="recuPoint" style="color: var(--or-fonce);">—</strong>
+                    </div>
+                </div>
+
+                <!-- Parcours fléché officiel -->
+                <div class="route-arrow-flow" style="margin: 14px 0 18px; background: var(--blanc); border: 1px solid var(--bordure-claire);">
+                    <div class="flow-step">
+                        <span class="flow-label">Votre Commune</span>
+                        <strong class="flow-origin-name" id="recuFlowCommune">—</strong>
+                    </div>
+                    <div class="flow-arrow-indicator" style="width: 32px; height: 32px; font-size: 15px;">➔</div>
+                    <div class="flow-step step-dest">
+                        <span class="flow-label">Lieu d'Embarquement</span>
+                        <strong class="flow-dest-name" id="recuFlowPoint">—</strong>
+                    </div>
+                </div>
+
+                <div class="boarding-grid-2">
+                    <div class="boarding-info-block">
+                        <span>Date de l'événement</span>
+                        <strong>Dimanche 13 Décembre 2026</strong>
+                    </div>
+                    <div class="boarding-info-block">
+                        <span>Heure de convocation</span>
+                        <strong>08h30 (Départ ferme à 10h00)</strong>
+                    </div>
+                </div>
+
+                <div class="boarding-grid-2">
+                    <div class="boarding-info-block">
+                        <span>Nombre de places</span>
+                        <strong id="recuQuantite">1 passager</strong>
+                    </div>
+                    <div class="boarding-info-block">
+                        <span>Montant Réglé</span>
+                        <strong id="recuTotal" style="font-size: 18px; color: var(--texte-sombre);">3 000 FCFA</strong>
+                    </div>
+                </div>
+
+                <div class="boarding-grid-2" style="align-items: center; margin-top: 10px; padding-top: 16px; border-top: 1px dashed var(--bordure-claire);">
+                    <div class="boarding-info-block">
+                        <span>Statut du Pass</span>
+                        <span id="recuStatut" class="boarding-status-pill status-paid">Validé & Confirmé</span>
+                    </div>
+                    <div class="boarding-info-block" style="text-align: right;">
+                        <span>Formule</span>
+                        <strong style="font-size: 14px;">Convoi A/R + Boisson</strong>
+                    </div>
+                </div>
+
+                <!-- Bandeau Code d'Embarquement Visuel -->
+                <div class="barcode-strip">
+                    <div class="barcode-graphic" id="recuBarcode">
+                        ||| | |||| | ||| |||| | ||||| | |||
+                    </div>
+                    <div style="font-size: 11px; color: var(--texte-muet); margin-top: 6px; letter-spacing: 0.5px;">
+                        Présentez ce billet numérique ou imprimé au délégué lors de la montée dans le car.
+                    </div>
+                </div>
+
+                <div style="background: var(--creme); border-radius: var(--radius-sm); padding: 14px; font-size: 13px; color: var(--texte-muet); line-height: 1.5; margin-bottom: 24px; border-left: 4px solid var(--or);">
+                    ⚠️ <strong>Consigne impérative :</strong> Vous devez vous rendre directement à votre lieu de rassemblement (<strong id="recuPointAlerte" style="color: var(--or-fonce);">—</strong>) le 13 décembre à 08h30. <u>Ne vous rendez pas à la Gendarmerie d'Abobo</u> sauf si vous habitez Abobo. Hommes à l'avant du car, femmes à l'arrière.
+                </div>
+
+                <!-- Boutons d'Action (Cachés à l'impression) -->
+                <div class="btn-print-hide" style="display: flex; flex-direction: column; gap: 12px;">
+                    <button type="button" onclick="window.print()" class="btn-primary" style="width: 100%; justify-content: center;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Imprimer ou Télécharger en PDF
+                    </button>
+
+                    <a href="index.html" class="btn-secondary" style="width: 100%; justify-content: center; color: var(--texte-sombre); border-color: #DCD3C5;">
+                        ← Retour à l'accueil
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Script de chargement dynamique -->
+    <script src="js/recu.js"></script>
+</body>
+</html>
