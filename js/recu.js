@@ -61,22 +61,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         if (!res) {
-            try {
-                const dataLocale = localStorage.getItem("reservation_data");
-                if (dataLocale) {
-                    res = JSON.parse(dataLocale);
-                }
-            } catch (e) {
-                console.error("Erreur lecture pass local :", e);
-            }
-        }
-
-        if (!res) {
             if (loadingEl) {
                 loadingEl.innerHTML = `
                     <div style="padding: 20px;">
                         <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">Dossier de réservation #${id} introuvable.</p>
                         <a href="index.html#billetterie" class="btn-primary" style="display: inline-flex; font-size: 14px;">Retourner à la billetterie</a>
+                    </div>
+                `;
+            }
+            return;
+        }
+
+        // Le Pass d'embarquement n'est délivré qu'après confirmation du paiement
+        if (res.statut !== "PAYÉ") {
+            if (loadingEl) {
+                loadingEl.innerHTML = `
+                    <div style="padding: 20px;">
+                        <p style="color: #b91c1c; font-weight: 700; margin-bottom: 8px;">⏳ Paiement non confirmé</p>
+                        <p style="margin-bottom: 16px;">Votre réservation <strong>#PP-${String(res.id).padStart(4, "0")}</strong> est bien enregistrée, mais le Pass d'embarquement n'est délivré qu'après validation de votre paiement SASPay.</p>
+                        <a href="paiement.html?id=${res.id}" class="btn-primary" style="display: inline-flex; font-size: 14px; margin-bottom: 10px;">Finaliser mon paiement →</a><br>
+                        <a href="recu.html?id=${res.id}" style="font-size: 13px; color: var(--or-fonce); font-weight: 600;">J'ai déjà payé — vérifier à nouveau</a>
                     </div>
                 `;
             }
@@ -110,8 +114,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 elStatut.textContent = "Payé & Validé";
                 elStatut.className = "boarding-status-pill status-paid";
             } else {
-                elStatut.textContent = "Pass Confirmé • Enregistré";
-                elStatut.className = "boarding-status-pill status-paid";
+                elStatut.textContent = "En attente de paiement";
+                elStatut.className = "boarding-status-pill status-pending";
             }
         }
 
