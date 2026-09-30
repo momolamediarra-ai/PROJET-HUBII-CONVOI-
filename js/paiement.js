@@ -20,6 +20,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const saspayNotice = document.getElementById("saspayNotice");
     const btnVoirRecu = document.getElementById("btnVoirRecu");
 
+    // Lien officiel de paiement SASPay (menu "Liens de paiement" du tableau de bord SASPay)
+    const LIEN_PAIEMENT_SASPAY = "https://link.saspay.me/7sdjyxq84sg";
+
     const POINTS_RASSEMBLEMENT_MAP = {
         "Anyama": "Gare d'Anyama",
         "Bingerville": "Feu de Khesse",
@@ -101,52 +104,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // =========================================================================
-    // INITIALISATION DU PAIEMENT SASPAY (Emplacement prêt à être configuré)
+    // PAIEMENT VIA LIEN OFFICIEL SASPAY
     // =========================================================================
     if (btnSaspayPaiement) {
-        btnSaspayPaiement.addEventListener("click", async () => {
-            btnSaspayPaiement.disabled = true;
+        btnSaspayPaiement.addEventListener("click", () => {
             if (saspayNotice) {
                 saspayNotice.style.display = "block";
-                saspayNotice.innerHTML = `⏳ Connexion à la passerelle SASPay en cours pour le dossier <strong>#PP-${String(reservation.id).padStart(4, "0")}</strong>...`;
+                saspayNotice.innerHTML = `↗️ <strong>Redirection vers SASPay :</strong> effectuez votre paiement dans l'onglet qui vient de s'ouvrir, puis revenez ici pour consulter votre Pass d'embarquement.`;
             }
-
-            try {
-                // Appel vers l'endpoint backend SASPay configuré dans server.js
-                const reponse = await fetch(`/api/paiement/saspay/${reservation.id}`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        reservation_id: reservation.id,
-                        montant: reservation.total,
-                        nom: reservation.nom,
-                        telephone: reservation.telephone,
-                        commune: reservation.commune
-                    })
-                });
-
-                const data = await reponse.json();
-
-                if (reponse.ok && data.success && data.payment_url) {
-                    // Redirection vers le lien de checkout SASPay
-                    window.location.href = data.payment_url;
-                    return;
-                } else {
-                    // Si SASPay n'est pas encore configuré sur le serveur (clés en attente)
-                    if (saspayNotice) {
-                        saspayNotice.innerHTML = `ℹ️ <strong>Passerelle SASPay prête :</strong> ${data.message || "Veuillez renseigner vos identifiants SASPay dans le fichier .env / server.js pour activer le paiement automatique."}`;
-                    }
-                }
-            } catch (err) {
-                console.warn("Connexion serveur SASPay :", err);
-                if (saspayNotice) {
-                    saspayNotice.innerHTML = `ℹ️ <strong>Mode Prêt SASPay :</strong> Passerelle en attente de vos clés API dans le fichier <code>.env</code>.`;
-                }
-            } finally {
-                btnSaspayPaiement.disabled = false;
-            }
+            window.open(LIEN_PAIEMENT_SASPAY, "_blank");
         });
     }
-});
+});
