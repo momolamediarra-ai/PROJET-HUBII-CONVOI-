@@ -409,7 +409,7 @@ app.post("/api/paiement/saspay/:id", async (req, res) => {
         const saspayApiKey = process.env.SASPAY_API_KEY;
         const saspaySecretKey = process.env.SASPAY_SECRET_KEY;
         const saspayMerchantId = process.env.SASPAY_MERCHANT_ID;
-        const saspayBaseUrl = process.env.SASPAY_BASE_URL || "https://api.saspay.ci";
+        const saspayBaseUrl = process.env.SASPAY_BASE_URL || "https://api.saspay.me";
 
         // Si les clés ne sont pas encore renseignées dans le .env
         if (!saspayApiKey || !saspaySecretKey) {
