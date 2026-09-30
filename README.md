@@ -23,10 +23,10 @@ Ce site a été conçu avec une direction artistique haut de gamme et humaine, a
 | `admin.html` | Espace Délégués & Organisation : console de bord avec KPIs en direct, recherche instantanée, filtres et feuille d'émargement imprimable. |
 | `css/style.css` | Feuille de style complète, modulaire et responsive (mobile, tablette, desktop, print). |
 | `js/main.js` | Logique d'interaction : compte à rebours temps réel, ajusteur de passagers (`+`/`-`), calcul dynamique, accordéons FAQ et notifications toast. |
-| `js/paiement.js` | Chargement dynamique de la réservation et adaptation du lien Wave. |
+| `js/paiement.js` | Chargement dynamique de la réservation et redirection vers le lien de paiement officiel SASPay. |
 | `js/recu.js` | Génération et affichage du pass d'embarquement officiel. |
 | `js/admin.js` | Gestion de l'espace délégués (authentification, statistiques, pointage, suppression). |
-| `server.js` | Serveur Node.js / Express avec base de données SQLite (`better-sqlite3`), gestion des sessions et API REST. |
+| `server.js` | Serveur Node.js / Express avec base de données cloud **Turso** (`@libsql/client`), authentification admin par cookie signé et API REST (compatible Vercel serverless). |
 | `image/` | Affiche officielle du convoi (`petit paris.jpg`) et logo CORA EVENTS (`cora_event.png.jpeg`). |
 
 ---

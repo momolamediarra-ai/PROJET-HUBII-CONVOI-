@@ -76,12 +76,12 @@ Dashboard Vercel → Settings → Environment Variables :
 SESSION_SECRET=votre_secret_tres_long_et_aleatoire
 ADMIN_EMAIL=admin@coraevents.ci
 ADMIN_PASSWORD=VotreMotDePasseAdmin
-SASPAY_API_KEY=votre_cle_api_saspay
-SASPAY_SECRET_KEY=votre_cle_secrete_saspay
-SASPAY_MERCHANT_ID=votre_merchant_id
-SASPAY_BASE_URL=https://api.saspay.ci
+TURSO_DATABASE_URL=libsql://votre-base.turso.io
+TURSO_AUTH_TOKEN=votre_token_turso
 NODE_ENV=production
 ```
+
+> Le paiement se fait via le **lien officiel SASPay** (constante `LIEN_PAIEMENT_SASPAY` dans `js/paiement.js`) — aucune clé API SASPay n'est nécessaire. Les délégués valident les paiements reçus depuis la page admin (`✓ Valider`).
 
 ---
 
