@@ -61,6 +61,14 @@
       "dest": "/admin.html"
     },
     {
+      "src": "/confidentialite.html",
+      "dest": "/confidentialite.html"
+    },
+    {
+      "src": "/conditions.html",
+      "dest": "/conditions.html"
+    },
+    {
       "src": "/",
       "dest": "/index.html"
     }
