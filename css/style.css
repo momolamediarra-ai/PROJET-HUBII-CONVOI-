@@ -3373,4 +3373,217 @@ button {
     transform: translateY(-2px) scale(1.015);
     box-shadow: 0 12px 32px rgba(197, 154, 68, 0.6);
 }
+
+/* ==========================================================================
+   15. STYLES DU PASS D'EMBARQUEMENT / REÇU OFFICIEL (DIGITAL & PDF)
+   ========================================================================== */
+.boarding-pass-card {
+    max-width: 580px;
+    margin: 30px auto;
+    background: #FFFFFF;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--bordure-doree);
+    box-shadow: 0 20px 50px rgba(16, 14, 16, 0.12), 0 0 35px rgba(197, 154, 68, 0.15);
+    overflow: hidden;
+    position: relative;
+    z-index: 10;
+}
+
+.boarding-pass-head {
+    background: linear-gradient(135deg, #181517 0%, #2D0B12 50%, #181517 100%);
+    padding: 24px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--or);
+}
+
+.boarding-pass-body {
+    padding: 28px;
+    background: #FFFFFF;
+}
+
+.boarding-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.boarding-info-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.boarding-info-block span {
+    font-size: 11.5px;
+    color: var(--texte-muet);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 600;
+}
+
+.boarding-info-block strong {
+    font-size: 15px;
+    color: var(--texte-sombre);
+    font-weight: 700;
+}
+
+.boarding-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: fit-content;
+}
+
+.boarding-status-pill.status-paid {
+    background: #DCFCE7;
+    color: #15803D;
+    border: 1px solid #86EFAC;
+}
+
+.boarding-status-pill.status-pending {
+    background: #FEF3C7;
+    color: #B45309;
+    border: 1px solid #FCD34D;
+}
+
+.route-arrow-flow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-radius: var(--radius-md);
+    gap: 12px;
+}
+
+.flow-step {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.flow-label {
+    font-size: 11px;
+    color: var(--texte-muet);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.flow-origin-name, .flow-dest-name {
+    font-size: 14px;
+    color: var(--texte-sombre);
+    font-weight: 800;
+}
+
+.flow-dest-name {
+    color: var(--or-fonce);
+}
+
+.flow-arrow-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--or-doux);
+    color: var(--or-fonce);
+    border-radius: 50%;
+    font-weight: 900;
+}
+
+.barcode-strip {
+    background: #FAF7F2;
+    border: 1px dashed var(--bordure-doree);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    text-align: center;
+    margin: 18px 0;
+}
+
+.barcode-graphic {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #181517;
+    user-select: none;
+}
+
+/* ==========================================================================
+   16. RÈGLES D'IMPRESSION & EXPORT PDF OFFICIEL DU REÇU
+   ========================================================================== */
+@media print {
+    @page {
+        margin: 10mm;
+        size: auto;
+    }
+
+    body {
+        background: #FFFFFF !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        color: #000000 !important;
+    }
+
+    .scroll-progress-bar,
+    .ambient-glow,
+    .site-header,
+    .site-footer,
+    .btn-print-hide,
+    .cursor-glow-orb,
+    .toast-notice {
+        display: none !important;
+    }
+
+    .boarding-pass-card {
+        box-shadow: none !important;
+        border: 2px solid #C59A44 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        page-break-inside: avoid !important;
+        border-radius: 12px !important;
+        background: #FFFFFF !important;
+    }
+
+    .boarding-pass-head {
+        background: #181517 !important;
+        color: #FFFFFF !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .boarding-pass-head * {
+        color: #FFFFFF !important;
+    }
+
+    .boarding-status-pill.status-paid {
+        background: #DCFCE7 !important;
+        color: #15803D !important;
+        border: 1px solid #15803D !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .route-arrow-flow {
+        background: #FAF7F2 !important;
+        border: 1px solid #C59A44 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .barcode-strip {
+        background: #FAF7F2 !important;
+        border: 1px dashed #9A7426 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
 

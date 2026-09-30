@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Récupération de l'identifiant depuis l'URL ou le localStorage
     const urlParams = new URLSearchParams(window.location.search);
     const reservationId = urlParams.get("id") || localStorage.getItem("reservation_id");
+    const isPaidParam = urlParams.get("paid") === "1" || urlParams.get("status") === "success";
 
     const clientReservationId = document.getElementById("clientReservationId");
     const clientNom = document.getElementById("clientNom");
@@ -18,7 +19,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const btnSaspayPaiement = document.getElementById("btnSaspayPaiement");
     const btnSaspayMontant = document.getElementById("btnSaspayMontant");
     const saspayNotice = document.getElementById("saspayNotice");
-    const btnVoirRecu = document.getElementById("btnVoirRecu");
+    const saspayPostPaymentBox = document.getElementById("saspayPostPaymentBox");
+    const btnConfirmerEtRecu = document.getElementById("btnConfirmerEtRecu");
+    const dejaPayeBox = document.getElementById("dejaPayeBox");
+    const btnVoirRecuDirect = document.getElementById("btnVoirRecuDirect");
 
     // Lien officiel de paiement SASPay (menu "Liens de paiement" du tableau de bord SASPay)
     const LIEN_PAIEMENT_SASPAY = "https://link.saspay.me/7sdjyxq84sg";
@@ -46,19 +50,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let reservation = null;
 
-    try {
-        const reponse = await fetch(`/api/reservations/${reservationId}`);
-        const resultat = await reponse.json();
+    async function chargerDonneesReservation() {
+        try {
+            const reponse = await fetch(`/api/reservations/${reservationId}`);
+            const resultat = await reponse.json();
 
-        if (reponse.ok && resultat.success) {
-            reservation = resultat.reservation;
+            if (reponse.ok && resultat.success) {
+                reservation = resultat.reservation;
+                return reservation;
+            }
+        } catch (err) {
+            console.warn("Mode local paiement :", err);
         }
-    } catch (err) {
-        console.warn("Mode local paiement :", err);
-    }
 
-    // Récupération locale si le serveur n'est pas démarré
-    if (!reservation) {
+        // Récupération locale si le serveur n'est pas démarré
         try {
             const dataLocale = localStorage.getItem("reservation_data");
             if (dataLocale) {
@@ -67,7 +72,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         } catch (e) {
             console.error("Erreur lecture cache local :", e);
         }
+
+        return reservation;
     }
+
+    await chargerDonneesReservation();
 
     if (!reservation) {
         alert("Dossier de réservation introuvable. Redirection vers la billetterie.");
@@ -98,21 +107,100 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (clientTotal) clientTotal.textContent = totalFormate;
     if (btnSaspayMontant) btnSaspayMontant.textContent = totalFormate;
 
-    // Mettre à jour le lien vers le reçu officiel
-    if (btnVoirRecu) {
-        btnVoirRecu.href = `recu.html?id=${reservation.id}`;
+    // Fonction pour afficher l'état Payé
+    function activerEtatPaye() {
+        if (dejaPayeBox) dejaPayeBox.style.display = "block";
+        if (btnSaspayPaiement) btnSaspayPaiement.style.display = "none";
+        if (saspayPostPaymentBox) saspayPostPaymentBox.style.display = "none";
+        if (saspayNotice) saspayNotice.style.display = "none";
+        if (btnVoirRecuDirect) {
+            btnVoirRecuDirect.href = `recu.html?id=${reservation.id}`;
+        }
+    }
+
+    // Si la réservation est déjà PAYÉ
+    if (reservation.statut === "PAYÉ") {
+        activerEtatPaye();
     }
 
     // =========================================================================
-    // PAIEMENT VIA LIEN OFFICIEL SASPAY
+    // VALIDATION DU PAIEMENT CLIENT & TÉLÉCHARGEMENT DU REÇU
     // =========================================================================
+    async function validerPaiementEtRediriger() {
+        if (btnConfirmerEtRecu) {
+            btnConfirmerEtRecu.disabled = true;
+            btnConfirmerEtRecu.innerHTML = `⏳ Validation de votre pass en cours...`;
+        }
+
+        try {
+            const res = await fetch(`/api/reservations/${reservation.id}/confirmer-paiement`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            });
+            const data = await res.json();
+            if (data.success && data.reservation) {
+                reservation = data.reservation;
+            }
+        } catch (e) {
+            console.warn("Validation hors ligne locale :", e);
+        }
+
+        // Mettre à jour le cache local
+        reservation.statut = "PAYÉ";
+        localStorage.setItem("reservation_data", JSON.stringify(reservation));
+        localStorage.setItem("reservation_id", reservation.id);
+
+        // Redirection directe vers la page de reçu
+        window.location.href = `recu.html?id=${reservation.id}&paid=1`;
+    }
+
+    // Si le paramètre URL indique un retour de paiement
+    if (isPaidParam) {
+        await validerPaiementEtRediriger();
+        return;
+    }
+
+    // Clic sur "Payer avec SASPay"
     if (btnSaspayPaiement) {
         btnSaspayPaiement.addEventListener("click", () => {
             if (saspayNotice) {
                 saspayNotice.style.display = "block";
-                saspayNotice.innerHTML = `↗️ <strong>Redirection vers SASPay :</strong> effectuez votre paiement dans l'onglet qui vient de s'ouvrir, puis revenez ici pour consulter votre Pass d'embarquement.`;
             }
+            if (saspayPostPaymentBox) {
+                saspayPostPaymentBox.style.display = "block";
+            }
+
+            // Ouverture de la page SASPay officielle
             window.open(LIEN_PAIEMENT_SASPAY, "_blank");
         });
     }
+
+    // Clic sur "J'ai payé -> Télécharger mon Reçu & Pass"
+    if (btnConfirmerEtRecu) {
+        btnConfirmerEtRecu.addEventListener("click", () => {
+            validerPaiementEtRediriger();
+        });
+    }
+
+    // Polling discret : vérifie si le statut devient PAYÉ
+    const pollInterval = setInterval(async () => {
+        if (reservation && reservation.statut === "PAYÉ") {
+            clearInterval(pollInterval);
+            return;
+        }
+
+        try {
+            const reponse = await fetch(`/api/reservations/${reservationId}`);
+            const resultat = await reponse.json();
+
+            if (reponse.ok && resultat.success && resultat.reservation && resultat.reservation.statut === "PAYÉ") {
+                reservation = resultat.reservation;
+                localStorage.setItem("reservation_data", JSON.stringify(reservation));
+                activerEtatPaye();
+                clearInterval(pollInterval);
+            }
+        } catch (e) {
+            // mode hors ligne
+        }
+    }, 4000);
 });

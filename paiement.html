@@ -125,19 +125,49 @@
                     Réglez en toute sécurité via <strong>SASPay</strong> par Wave, Orange Money, MTN MoMo, Moov Money ou Carte bancaire.
                 </p>
 
-                <!-- Bouton d'action SASPay -->
+                <!-- Étape 1 : Bouton d'ouverture du lien SASPay -->
                 <button type="button" id="btnSaspayPaiement" class="btn-primary saspay-btn-checkout">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                    <span>Payer avec SASPay</span> (<span id="btnSaspayMontant">0 FCFA</span>)
+                    <span>1. Payer avec SASPay</span> (<span id="btnSaspayMontant">0 FCFA</span>)
                 </button>
 
-                <div id="saspayNotice" style="display: none; margin-top: 14px; font-size: 13px; color: var(--or-clair); background: rgba(197, 154, 68, 0.12); padding: 10px; border-radius: 8px; border: 1px dashed var(--or);">
-                    ⏳ Initialisation de la transaction SASPay en cours...
+                <div id="saspayNotice" style="display: none; margin-top: 18px; font-size: 13.5px; color: var(--or-clair); background: rgba(197, 154, 68, 0.14); padding: 14px; border-radius: 12px; border: 1px dashed var(--or); text-align: left; line-height: 1.5;">
+                    <div style="display: flex; align-items: flex-start; gap: 10px;">
+                        <span style="font-size: 18px;">↗️</span>
+                        <div>
+                            <strong>Paiement en cours sur SASPay :</strong><br>
+                            Complétez votre paiement dans la page SASPay ouverte, puis cliquez sur le bouton vert ci-dessous pour obtenir et télécharger immédiatement votre reçu.
+                        </div>
+                    </div>
                 </div>
 
-                <div style="font-size: 12px; color: var(--texte-clair-muet); margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <!-- Étape 2 : Confirmation après paiement & téléchargement immédiat du reçu -->
+                <div id="saspayPostPaymentBox" style="margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(197, 154, 68, 0.25);">
+                    <p style="font-size: 13.5px; color: #E5E0D8; margin-bottom: 12px;">
+                        Vous avez finalisé votre paiement sur SASPay ?
+                    </p>
+                    <button type="button" id="btnConfirmerEtRecu" class="btn-primary" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%); color: #FFF; font-weight: 800; font-size: 15px; box-shadow: 0 8px 20px rgba(34, 197, 94, 0.35);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>J'ai payé → Télécharger mon Reçu & Pass</span>
+                    </button>
+                </div>
+
+                <!-- Si déjà payé -->
+                <div id="dejaPayeBox" style="display: none; margin-top: 16px; background: rgba(34, 197, 94, 0.15); border: 1px solid #22C55E; padding: 16px; border-radius: 12px; text-align: center;">
+                    <div style="color: #4ADE80; font-weight: 800; font-size: 16px; margin-bottom: 8px;">
+                        ✓ Réservation Confirmée & Payée !
+                    </div>
+                    <p style="font-size: 13px; color: #FFF; margin-bottom: 14px;">
+                        Votre paiement a bien été enregistré. Votre Pass d'embarquement officiel est prêt.
+                    </p>
+                    <a href="recu.html" id="btnVoirRecuDirect" class="btn-primary" style="display: inline-flex; justify-content: center; width: 100%; background: var(--or);">
+                        🎫 Télécharger mon Pass d'embarquement
+                    </a>
+                </div>
+
+                <div style="font-size: 12px; color: var(--texte-clair-muet); margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    Paiement crypté 256-bit certifié SASPay
+                    Paiement crypté 256-bit certifié SASPay • Reçu PDF instantané
                 </div>
             </div>
 

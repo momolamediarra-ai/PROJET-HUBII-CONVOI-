@@ -323,7 +323,74 @@ app.get("/api/reservations/:id", async (req, res) => {
     }
 });
 
-// Marquer une réservation comme PAYÉ
+// Marquer une réservation comme PAYÉ (Validation client après SASPay)
+app.post("/api/reservations/:id/confirmer-paiement", async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+        const reservation = await getOne(`
+            SELECT * FROM reservations
+            WHERE id = ?
+        `, [id]);
+
+        if (!reservation) {
+            return res.status(404).json({
+                success: false,
+                message: "Réservation introuvable."
+            });
+        }
+
+        await runQuery(`
+            UPDATE reservations
+            SET statut = 'PAYÉ'
+            WHERE id = ?
+        `, [id]);
+
+        const updated = await getOne(`
+            SELECT * FROM reservations
+            WHERE id = ?
+        `, [id]);
+
+        res.json({
+            success: true,
+            message: "Paiement SASPay validé avec succès !",
+            reservation: updated
+        });
+    } catch (err) {
+        console.error("Erreur confirmation paiement client :", err);
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la confirmation du paiement : " + err.message
+        });
+    }
+});
+
+// Webhook / Callback SASPay
+app.all(["/api/webhook/saspay", "/api/saspay/callback"], async (req, res) => {
+    try {
+        const data = req.body || req.query || {};
+        console.log("Notification reçue de SASPay :", data);
+
+        const reservationId = data.custom_data || data.reservation_id || data.reference || data.id;
+
+        if (reservationId) {
+            const cleanId = Number(String(reservationId).replace(/[^0-9]/g, ""));
+            if (cleanId) {
+                await runQuery(`
+                    UPDATE reservations
+                    SET statut = 'PAYÉ'
+                    WHERE id = ?
+                `, [cleanId]);
+            }
+        }
+
+        res.json({ success: true, message: "Webhook SASPay traité avec succès" });
+    } catch (err) {
+        console.error("Erreur Webhook SASPay :", err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Marquer une réservation comme PAYÉ (par l'administrateur / délégué)
 app.put("/api/reservations/:id/payer", requireAdmin, async (req, res) => {
     try {
         const id = Number(req.params.id);

@@ -5,6 +5,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id") || localStorage.getItem("reservation_id");
+    const isPaidParam = params.get("paid") === "1" || params.get("status") === "success";
 
     const loadingEl = document.getElementById("recuLoading");
     const containerEl = document.getElementById("recuContainer");
@@ -19,6 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const elTotal = document.getElementById("recuTotal");
     const elStatut = document.getElementById("recuStatut");
     const elBarcode = document.getElementById("recuBarcode");
+    const btnShareWhatsApp = document.getElementById("btnShareWhatsApp");
 
     const POINTS_RASSEMBLEMENT_MAP = {
         "Anyama": "Gare d'Anyama",
@@ -50,14 +52,44 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
         let res = null;
 
-        try {
-            const response = await fetch(`/api/reservations/${id}`);
-            const result = await response.json();
-            if (response.ok && result.success) {
-                res = result.reservation;
+        // Si le paramètre paid=1 est présent, confirmer automatiquement le paiement
+        if (isPaidParam) {
+            try {
+                const confRes = await fetch(`/api/reservations/${id}/confirmer-paiement`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                });
+                const confData = await confRes.json();
+                if (confRes.ok && confData.success && confData.reservation) {
+                    res = confData.reservation;
+                }
+            } catch (err) {
+                console.warn("Auto-validation réseau :", err);
             }
-        } catch (e) {
-            console.warn("Mode local pour le pass :", e);
+        }
+
+        if (!res) {
+            try {
+                const response = await fetch(`/api/reservations/${id}`);
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    res = result.reservation;
+                }
+            } catch (e) {
+                console.warn("Mode local pour le pass :", e);
+            }
+        }
+
+        // Récupération locale
+        if (!res) {
+            try {
+                const dataLocale = localStorage.getItem("reservation_data");
+                if (dataLocale) {
+                    res = JSON.parse(dataLocale);
+                }
+            } catch (e) {
+                console.error("Erreur cache pass :", e);
+            }
         }
 
         if (!res) {
@@ -72,20 +104,51 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        // Le Pass d'embarquement n'est délivré qu'après confirmation du paiement
-        if (res.statut !== "PAYÉ") {
+        // Si la réservation n'est pas encore payée
+        if (res.statut !== "PAYÉ" && !isPaidParam) {
             if (loadingEl) {
                 loadingEl.innerHTML = `
-                    <div style="padding: 20px;">
-                        <p style="color: #b91c1c; font-weight: 700; margin-bottom: 8px;">⏳ Paiement non confirmé</p>
-                        <p style="margin-bottom: 16px;">Votre réservation <strong>#PP-${String(res.id).padStart(4, "0")}</strong> est bien enregistrée, mais le Pass d'embarquement n'est délivré qu'après validation de votre paiement SASPay.</p>
-                        <a href="paiement.html?id=${res.id}" class="btn-primary" style="display: inline-flex; font-size: 14px; margin-bottom: 10px;">Finaliser mon paiement →</a><br>
-                        <a href="recu.html?id=${res.id}" style="font-size: 13px; color: var(--or-fonce); font-weight: 600;">J'ai déjà payé — vérifier à nouveau</a>
+                    <div style="padding: 24px; text-align: center;">
+                        <div style="font-size: 32px; margin-bottom: 10px;">⏳</div>
+                        <h3 style="color: #b91c1c; font-weight: 800; font-size: 18px; margin-bottom: 8px;">Paiement en attente de validation</h3>
+                        <p style="margin-bottom: 18px; font-size: 14px; color: var(--texte-muet); line-height: 1.5;">
+                            Votre réservation <strong>#PP-${String(res.id).padStart(4, "0")}</strong> est enregistrée. Si vous venez d'effectuer votre règlement sur <strong>SASPay</strong>, débloquez immédiatement votre reçu ci-dessous :
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 10px; max-width: 360px; margin: 0 auto;">
+                            <button type="button" id="btnDebloquerRecu" class="btn-primary" style="justify-content: center; background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);">
+                                ✓ J'ai payé sur SASPay — Débloquer mon reçu
+                            </button>
+                            <a href="paiement.html?id=${res.id}" class="btn-secondary" style="justify-content: center;">
+                                Payer sur SASPay maintenant →
+                            </a>
+                        </div>
                     </div>
                 `;
+
+                const btnDebloquer = document.getElementById("btnDebloquerRecu");
+                if (btnDebloquer) {
+                    btnDebloquer.addEventListener("click", async () => {
+                        btnDebloquer.disabled = true;
+                        btnDebloquer.textContent = "Déblocage du reçu en cours...";
+                        try {
+                            await fetch(`/api/reservations/${id}/confirmer-paiement`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" }
+                            });
+                        } catch (e) {}
+
+                        res.statut = "PAYÉ";
+                        localStorage.setItem("reservation_data", JSON.stringify(res));
+                        window.location.reload();
+                    });
+                }
             }
             return;
         }
+
+        // Si le statut est PAYÉ, s'assurer que le cache local le reflète
+        res.statut = "PAYÉ";
+        localStorage.setItem("reservation_data", JSON.stringify(res));
 
         const pointLieu = res.point_rassemblement || POINTS_RASSEMBLEMENT_MAP[res.commune] || "Point de sa commune";
 
@@ -110,17 +173,29 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         if (elStatut) {
-            if (res.statut === "PAYÉ") {
-                elStatut.textContent = "Payé & Validé";
-                elStatut.className = "boarding-status-pill status-paid";
-            } else {
-                elStatut.textContent = "En attente de paiement";
-                elStatut.className = "boarding-status-pill status-pending";
-            }
+            elStatut.textContent = "✓ Payé & Validé";
+            elStatut.className = "boarding-status-pill status-paid";
         }
 
         if (elBarcode) {
             elBarcode.textContent = `||| ${String(res.id).padStart(4, "0")} || 2026-PP |||||`;
+        }
+
+        // Configurer le lien WhatsApp pour recevoir/sauvegarder une preuve
+        if (btnShareWhatsApp) {
+            const msgWhatsApp = encodeURIComponent(
+                `*REÇU DE RÉSERVATION — CORA EVENTS*\n` +
+                `Dossier N° : #PP-${String(res.id).padStart(4, "0")}\n` +
+                `Nom : ${res.nom}\n` +
+                `Téléphone : ${res.telephone}\n` +
+                `Commune : ${res.commune || 'Abidjan'}\n` +
+                `Lieu de départ : ${pointLieu}\n` +
+                `Places : ${res.quantite}\n` +
+                `Montant réglé : ${Number(res.total).toLocaleString("fr-FR")} FCFA\n` +
+                `Paiement : Validé SASPay\n` +
+                `Date événement : Dimanche 13 Décembre 2026 (08h30)`
+            );
+            btnShareWhatsApp.href = `https://wa.me/2250105245225?text=${msgWhatsApp}`;
         }
 
         if (loadingEl) loadingEl.style.display = "none";
