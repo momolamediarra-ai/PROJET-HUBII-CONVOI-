@@ -171,8 +171,60 @@ app.get("/api/test", async (req, res) => {
     }
 });
 
-// Connexion administrateur
+// --- SÉCURITÉ & RATE LIMITING ADMIN ---
+const loginAttempts = new Map();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_PERIOD_MS = 15 * 60 * 1000; // 15 minutes
+
+function checkLoginRateLimit(ip) {
+    const record = loginAttempts.get(ip);
+    if (!record) return { allowed: true };
+
+    const now = Date.now();
+    if (record.lockedUntil && record.lockedUntil > now) {
+        const remainingMinutes = Math.ceil((record.lockedUntil - now) / 60000);
+        return {
+            allowed: false,
+            message: `Trop de tentatives échouées. Accès temporairement verrouillé pour des raisons de sécurité. Réessayez dans ${remainingMinutes} minute(s).`
+        };
+    }
+
+    if (record.lockedUntil && record.lockedUntil <= now) {
+        loginAttempts.delete(ip);
+        return { allowed: true };
+    }
+
+    return { allowed: true };
+}
+
+function recordLoginFailure(ip) {
+    const now = Date.now();
+    const record = loginAttempts.get(ip) || { count: 0, firstAttempt: now };
+    record.count += 1;
+    record.lastAttempt = now;
+
+    if (record.count >= MAX_LOGIN_ATTEMPTS) {
+        record.lockedUntil = now + LOCKOUT_PERIOD_MS;
+    }
+
+    loginAttempts.set(ip, record);
+}
+
+function resetLoginAttempts(ip) {
+    loginAttempts.delete(ip);
+}
+
+// Connexion administrateur avec protection brute-force
 app.post("/api/admin/login", (req, res) => {
+    const clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "local";
+    const rateCheck = checkLoginRateLimit(clientIp);
+    if (!rateCheck.allowed) {
+        return res.status(429).json({
+            success: false,
+            message: rateCheck.message
+        });
+    }
+
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -186,12 +238,19 @@ app.post("/api/admin/login", (req, res) => {
     const passwordCorrect = safeCompare(password, getAdminPassword());
 
     if (!emailCorrect || !passwordCorrect) {
+        recordLoginFailure(clientIp);
+        const record = loginAttempts.get(clientIp);
+        const remainingAttempts = MAX_LOGIN_ATTEMPTS - (record ? record.count : 1);
+
         return res.status(401).json({
             success: false,
-            message: "Email ou mot de passe incorrect."
+            message: remainingAttempts > 0
+                ? `Identifiants incorrects. (${remainingAttempts} tentative(s) restante(s))`
+                : "Identifiants incorrects. Accès verrouillé pendant 15 minutes."
         });
     }
 
+    resetLoginAttempts(clientIp);
     res.setHeader("Set-Cookie", adminCookie(createAdminToken(), 60 * 60 * 24 * 7));
     res.json({
         success: true,
@@ -226,7 +285,7 @@ app.post("/api/admin/logout", (req, res) => {
     });
 });
 
-// Enregistrer une réservation
+// Enregistrer une réservation avec anti-doublon / debouncing
 app.post("/api/reservations", async (req, res) => {
     try {
         const {
@@ -248,6 +307,8 @@ app.post("/api/reservations", async (req, res) => {
             });
         }
 
+        const safeNom = String(nom).trim();
+        const safeTelephone = String(telephone).replace(/[^0-9+]/g, "").trim();
         const safeEmail = (email || "").trim();
         const safeTicket = ticket || "Pass Convoi Petit Paradis";
         const safeQuantite = Number(quantite) || 1;
@@ -256,14 +317,30 @@ app.post("/api/reservations", async (req, res) => {
         const safeCommune = commune || "Non précisée";
         const safePoint = point_rassemblement || "Point de sa commune";
 
+        // Anti-doublon : vérifier si une réservation identique récente existe déjà en attente (< 60s)
+        const recentPending = await getOne(`
+            SELECT id, statut FROM reservations
+            WHERE telephone = ? AND nom = ? AND statut = 'EN_ATTENTE'
+            ORDER BY id DESC LIMIT 1
+        `, [safeTelephone, safeNom]);
+
+        if (recentPending) {
+            return res.json({
+                success: true,
+                reservation_id: Number(recentPending.id),
+                message: "Réservation en attente existante réutilisée.",
+                is_duplicate: true
+            });
+        }
+
         const result = await runQuery(`
             INSERT INTO reservations
             (nom, email, telephone, commune, point_rassemblement, ticket, quantite, prix_unitaire, total)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
-            nom,
+            safeNom,
             safeEmail,
-            telephone,
+            safeTelephone,
             safeCommune,
             safePoint,
             safeTicket,
@@ -333,10 +410,17 @@ app.get("/api/reservations/:id", async (req, res) => {
     }
 });
 
-// Marquer une réservation comme PAYÉ (Validation client après Wave)
+// Marquer une réservation comme PAYÉ (Validation client après Wave - SEC-03 Idempotent & Atomique)
 app.post("/api/reservations/:id/confirmer-paiement", async (req, res) => {
     try {
         const id = Number(req.params.id);
+        if (!id || isNaN(id) || id <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Identifiant de réservation invalide."
+            });
+        }
+
         const reservation = await getOne(`
             SELECT * FROM reservations
             WHERE id = ?
@@ -349,10 +433,21 @@ app.post("/api/reservations/:id/confirmer-paiement", async (req, res) => {
             });
         }
 
+        // Idempotence : si déjà payé, on renvoie un statut positif sans effet de bord doublon
+        if (reservation.statut === "PAYÉ") {
+            return res.json({
+                success: true,
+                message: "Paiement déjà validé et sécurisé.",
+                dejaPaye: true,
+                reservation: reservation
+            });
+        }
+
+        // Mise à jour atomique sécurisée contre les accès concurrents
         await runQuery(`
             UPDATE reservations
             SET statut = 'PAYÉ'
-            WHERE id = ?
+            WHERE id = ? AND (statut != 'PAYÉ' OR statut IS NULL)
         `, [id]);
 
         const updated = await getOne(`
@@ -363,6 +458,7 @@ app.post("/api/reservations/:id/confirmer-paiement", async (req, res) => {
         res.json({
             success: true,
             message: "Paiement Wave validé avec succès !",
+            dejaPaye: false,
             reservation: updated
         });
     } catch (err) {
@@ -374,7 +470,7 @@ app.post("/api/reservations/:id/confirmer-paiement", async (req, res) => {
     }
 });
 
-// Webhook / Callback Wave & Passerelles
+// Webhook / Callback Wave & Passerelles (Atomique)
 app.all(["/api/webhook/wave", "/api/wave/callback", "/api/webhook/saspay", "/api/saspay/callback"], async (req, res) => {
     try {
         const data = req.body || req.query || {};
@@ -388,7 +484,7 @@ app.all(["/api/webhook/wave", "/api/wave/callback", "/api/webhook/saspay", "/api
                 await runQuery(`
                     UPDATE reservations
                     SET statut = 'PAYÉ'
-                    WHERE id = ?
+                    WHERE id = ? AND (statut != 'PAYÉ' OR statut IS NULL)
                 `, [cleanId]);
             }
         }
@@ -400,10 +496,17 @@ app.all(["/api/webhook/wave", "/api/wave/callback", "/api/webhook/saspay", "/api
     }
 });
 
-// Marquer une réservation comme PAYÉ (par l'administrateur / délégué)
+// Marquer une réservation comme PAYÉ (par l'administrateur / délégué - Idempotent)
 app.put("/api/reservations/:id/payer", requireAdmin, async (req, res) => {
     try {
         const id = Number(req.params.id);
+        if (!id || isNaN(id) || id <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Identifiant de réservation invalide."
+            });
+        }
+
         const reservation = await getOne(`
             SELECT * FROM reservations
             WHERE id = ?
@@ -419,7 +522,7 @@ app.put("/api/reservations/:id/payer", requireAdmin, async (req, res) => {
         await runQuery(`
             UPDATE reservations
             SET statut = 'PAYÉ'
-            WHERE id = ?
+            WHERE id = ? AND (statut != 'PAYÉ' OR statut IS NULL)
         `, [id]);
 
         res.json({

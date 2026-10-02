@@ -1,11 +1,16 @@
 /**
  * GESTION DU TABLEAU DE BORD DÉLÉGUÉ — CORA EVENTS
+ * Avec protection des données personnelles (RBAC & Masquage) & Déconnexion d'inactivité
  */
 
 document.addEventListener("DOMContentLoaded", () => {
     let toutesLesReservations = [];
     let refreshTimer = null;
+    let sessionTimer = null;
     const REFRESH_INTERVAL_MS = 5000;
+    const INACTIVITY_TIMEOUT_SECONDS = 15 * 60; // 15 minutes
+    let tempsRestantSession = INACTIVITY_TIMEOUT_SECONDS;
+    let donneesMasquees = true; // Protection activée par défaut
 
     // Éléments DOM
     const loginView = document.getElementById("loginView");
@@ -27,6 +32,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const tableBody = document.getElementById("reservationsTableBody");
     const tableCounter = document.getElementById("tableCounter");
 
+    const btnTogglePrivacy = document.getElementById("btnTogglePrivacy");
+    const privacyStatusBadge = document.getElementById("privacyStatusBadge");
+    const sessionCountdown = document.getElementById("sessionCountdown");
+
     const toast = document.getElementById("toastNotice");
     const toastMsg = document.getElementById("toastMsg");
     const toastIcon = document.getElementById("toastIcon");
@@ -37,6 +46,76 @@ document.addEventListener("DOMContentLoaded", () => {
         toastIcon.textContent = type === "error" ? "⚠️" : (type === "success" ? "✅" : "ℹ️");
         toast.classList.add("show");
         setTimeout(() => toast.classList.remove("show"), 3500);
+    }
+
+    // --- FONCTIONS DE PROTECTION & MASQUAGE DES DONNÉES ---
+    function masquerTelephone(tel) {
+        if (!tel) return "—";
+        const clean = String(tel).trim();
+        if (clean.length <= 4) return "•• •• ••";
+        return clean.slice(0, 2) + " •• •• " + clean.slice(-2);
+    }
+
+    function masquerEmail(email) {
+        if (!email) return "—";
+        const parts = email.split("@");
+        if (parts.length !== 2) return "••••@••••";
+        const user = parts[0];
+        const domain = parts[1];
+        const maskedUser = user.length <= 2 ? user[0] + "•••" : user.slice(0, 2) + "•••" + user.slice(-1);
+        return `${maskedUser}@${domain}`;
+    }
+
+    // --- MINUTEUR D'INACTIVITÉ & DÉCONNEXION AUTOMATIQUE (15 MIN) ---
+    function reinitialiserInactivite() {
+        tempsRestantSession = INACTIVITY_TIMEOUT_SECONDS;
+        mettreAJourCompteurSession();
+    }
+
+    function mettreAJourCompteurSession() {
+        if (!sessionCountdown) return;
+        const minutes = Math.floor(tempsRestantSession / 60);
+        const secondes = tempsRestantSession % 60;
+        sessionCountdown.textContent = `${String(minutes).padStart(2, "0")}:${String(secondes).padStart(2, "0")}`;
+    }
+
+    function demarrerMinuteurSession() {
+        arreterMinuteurSession();
+        tempsRestantSession = INACTIVITY_TIMEOUT_SECONDS;
+        mettreAJourCompteurSession();
+
+        sessionTimer = setInterval(() => {
+            tempsRestantSession -= 1;
+            mettreAJourCompteurSession();
+
+            if (tempsRestantSession <= 0) {
+                arreterMinuteurSession();
+                forcerDeconnexionInactivite();
+            }
+        }, 1000);
+
+        ["mousemove", "keydown", "click", "scroll", "touchstart"].forEach((evt) => {
+            window.addEventListener(evt, reinitialiserInactivite, { passive: true });
+        });
+    }
+
+    function arreterMinuteurSession() {
+        if (sessionTimer) {
+            clearInterval(sessionTimer);
+            sessionTimer = null;
+        }
+    }
+
+    async function forcerDeconnexionInactivite() {
+        try {
+            await fetch("/api/admin/logout", { method: "POST" });
+        } catch (e) {
+            // Ignorer
+        }
+        arreterActualisationTempsReel();
+        arreterMinuteurSession();
+        afficherLogin();
+        notifier("Session fermée automatiquement suite à 15 min d'inactivité.", "info");
     }
 
     function demarrerActualisationTempsReel() {
@@ -62,11 +141,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (data.success && data.admin) {
                 afficherDashboard();
+                demarrerMinuteurSession();
                 chargerReservations();
                 demarrerActualisationTempsReel();
             } else {
                 afficherLogin();
                 arreterActualisationTempsReel();
+                arreterMinuteurSession();
             }
         } catch (err) {
             console.error("Erreur session:", err);
@@ -117,6 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 btnLoginSubmit.textContent = "Se connecter à l'espace délégués →";
 
                 afficherDashboard();
+                demarrerMinuteurSession();
                 chargerReservations();
                 demarrerActualisationTempsReel();
 
@@ -129,13 +211,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- 3. DÉCONNEXION ---
+    // --- 3. DÉCONNEXION MANUELLE ---
     if (btnLogout) {
         btnLogout.addEventListener("click", async () => {
             try {
                 await fetch("/api/admin/logout", { method: "POST" });
                 notifier("Session clôturée avec succès.", "info");
                 arreterActualisationTempsReel();
+                arreterMinuteurSession();
                 afficherLogin();
             } catch (err) {
                 console.error("Erreur logout:", err);
@@ -154,7 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
             appliquerFiltres();
         } catch (err) {
             console.error("Erreur chargement réservations:", err);
-            tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: red; padding: 30px;">Erreur de chargement des données.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: red; padding: 30px;">Erreur de chargement des données.</td></tr>`;
         }
     }
 
@@ -247,6 +330,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }) : "—";
             const pointLieu = r.point_rassemblement || POINTS_ADMIN_MAP[r.commune] || "";
 
+            const displayTel = donneesMasquees ? masquerTelephone(r.telephone) : r.telephone;
+            const displayEmail = donneesMasquees ? masquerEmail(r.email) : (r.email || "—");
+
             return `
                 <tr>
                     <td>
@@ -256,10 +342,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         <strong style="color: var(--texte-sombre);">${r.nom}</strong>
                     </td>
                     <td>
-                        ${r.email ? `<a href="mailto:${r.email}" style="color: var(--texte-muet); font-size: 13px;">${r.email}</a>` : `<span style="color: var(--texte-muet);">—</span>`}
+                        ${r.email ? (donneesMasquees ? `<span style="font-family: monospace; color: var(--texte-muet); font-size: 13px;">${displayEmail}</span>` : `<a href="mailto:${r.email}" style="color: var(--texte-muet); font-size: 13px;">${r.email}</a>`) : `<span style="color: var(--texte-muet);">—</span>`}
                     </td>
                     <td>
-                        <a href="tel:${r.telephone}" style="color: var(--or-fonce); font-weight: 600;">${r.telephone}</a>
+                        ${donneesMasquees ? `<span style="font-family: monospace; color: var(--texte-sombre); font-weight: 700;">${displayTel}</span>` : `<a href="tel:${r.telephone}" style="color: var(--or-fonce); font-weight: 700;">${r.telephone}</a>`}
                     </td>
                     <td>
                         <strong>${r.commune || "Non précisée"}</strong>
@@ -301,7 +387,40 @@ document.addEventListener("DOMContentLoaded", () => {
         }).join("");
     }
 
-    // --- 7. ACTIONS DU DÉLÉGUÉ ---
+    // --- 7. BASCULE DE CONFIDENTIALITÉ / DÉMASQUAGE DES DONNÉES ---
+    if (btnTogglePrivacy) {
+        btnTogglePrivacy.addEventListener("click", () => {
+            donneesMasquees = !donneesMasquees;
+
+            if (donneesMasquees) {
+                btnTogglePrivacy.innerHTML = "👁️ Démasquer les données";
+                btnTogglePrivacy.style.borderColor = "var(--or)";
+                btnTogglePrivacy.style.color = "var(--or-fonce)";
+                if (privacyStatusBadge) {
+                    privacyStatusBadge.textContent = "🔒 Données protégées & masquées";
+                    privacyStatusBadge.style.background = "#DCFCE7";
+                    privacyStatusBadge.style.color = "#166534";
+                    privacyStatusBadge.style.borderColor = "#86EFAC";
+                }
+                notifier("Protection active : coordonnées masquées.", "info");
+            } else {
+                btnTogglePrivacy.innerHTML = "🔒 Masquer les données";
+                btnTogglePrivacy.style.borderColor = "#DC2626";
+                btnTogglePrivacy.style.color = "#DC2626";
+                if (privacyStatusBadge) {
+                    privacyStatusBadge.textContent = "⚠️ Mode démasqué (Usage interne)";
+                    privacyStatusBadge.style.background = "#FEF3C7";
+                    privacyStatusBadge.style.color = "#92400E";
+                    privacyStatusBadge.style.borderColor = "#FCD34D";
+                }
+                notifier("Mode démasqué activé pour pointage.", "info");
+            }
+
+            appliquerFiltres();
+        });
+    }
+
+    // --- 8. ACTIONS DU DÉLÉGUÉ ---
     window.validerPaiement = async (id) => {
         try {
             const res = await fetch(`/api/reservations/${id}/payer`, { method: "PUT" });
