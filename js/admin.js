@@ -246,10 +246,14 @@ document.addEventListener("DOMContentLoaded", () => {
         let totalPassagers = 0;
         let passagersConfirmes = 0;
         let recettesConfirmes = 0;
+        const parCommune = {};
 
         reservations.forEach((r) => {
             const q = Number(r.quantite) || 1;
             totalPassagers += q;
+
+            const communeKey = r.commune || "Non précisée";
+            parCommune[communeKey] = (parCommune[communeKey] || 0) + q;
 
             if (r.statut === "PAYÉ") {
                 passagersConfirmes += q;
@@ -261,6 +265,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (kpiTotalDossiers) kpiTotalDossiers.textContent = reservations.length;
         if (kpiConfirmes) kpiConfirmes.textContent = `${passagersConfirmes} / ${totalPassagers}`;
         if (kpiTotalRecettes) kpiTotalRecettes.textContent = `${recettesConfirmes.toLocaleString("fr-FR")} FCFA`;
+
+        // SEC-05 : occupation des places par commune (contrôle du surbooking en temps réel)
+        const elOccupation = document.getElementById("occupationParCommune");
+        if (elOccupation) {
+            const entrees = Object.entries(parCommune).sort((a, b) => b[1] - a[1]);
+            elOccupation.innerHTML = entrees.length
+                ? entrees.map(([commune, passagers]) => `<span class="occupation-badge">${commune} : <strong>${passagers}</strong> place(s)</span>`).join("")
+                : `<span style="font-size: 13px; color: var(--texte-muet);">Aucune place réservée pour le moment.</span>`;
+        }
     }
 
     // --- 6. FILTRAGE ET RENDU DU TABLEAU ---

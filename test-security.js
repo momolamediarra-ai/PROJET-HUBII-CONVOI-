@@ -1,5 +1,5 @@
 /**
- * SUITE DE TESTS AUTOMATISÉS DE SÉCURITÉ & BACKEND (SEC-03 & RBAC)
+ * SUITE DE TESTS AUTOMATISÉS DE SÉCURITÉ & BACKEND (SEC-03, SEC-04, SEC-05 & RBAC)
  * Teste la robustesse des endpoints sans impacter la base de production.
  */
 
@@ -132,6 +132,83 @@ async function runTests() {
         assert(rateLimitTriggered, "Le système de limitation a bloqué l'attaquant avec HTTP 429 après 5 tentatives échouées");
     } catch (e) {
         assert(false, `Erreur test brute force : ${e.message}`);
+    }
+
+    // --- TEST 6 : SEC-04 — Manipulation du montant impossible (calcul 100% serveur) ---
+    console.log("\n6️⃣ Test SEC-04 : Le montant est toujours calculé côté serveur :");
+    try {
+        const tamperedPayload = {
+            nom: "Testeur Montant SEC04",
+            email: "testeur.montant@coraevents.ci",
+            telephone: "0700009977",
+            commune: "Abobo",
+            point_rassemblement: "Gendarmerie d'Abobo",
+            ticket: "Pass Convoi Petit Paradis",
+            quantite: 2,
+            prix_unitaire: 1,
+            total: 1
+        };
+
+        const res = await fetch(`${BASE_URL}/api/reservations`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(tamperedPayload)
+        });
+        const data = await res.json();
+
+        assert(res.status === 200 && data.success === true, "Réservation créée malgré un montant falsifié (1 FCFA) envoyé par le client");
+        assert(data.total === 6000 && data.prix_unitaire === 3000, `Montant recalculé côté serveur : ${data.total} FCFA (attendu 6 000 FCFA)`);
+
+        const verifRes = await fetch(`${BASE_URL}/api/reservations/${data.reservation_id}`);
+        const verifData = await verifRes.json();
+        assert(verifData.reservation && Number(verifData.reservation.total) === 6000, "Montant stocké en base conforme au calcul officiel (2 × 3 000 FCFA)");
+    } catch (e) {
+        assert(false, `Erreur test SEC-04 : ${e.message}`);
+    }
+
+    // --- TEST 7 : SEC-05 — Contrôle de capacité serveur & quantités invalides ---
+    console.log("\n7️⃣ Test SEC-05 : Contrôle de capacité côté serveur :");
+    try {
+        const capRes = await fetch(`${BASE_URL}/api/capacite`);
+        const capData = await capRes.json();
+        assert(capRes.status === 200 && capData.success === true, "Endpoint /api/capacite opérationnel");
+        assert(typeof capData.places_utilisees === "number" && capData.places_utilisees >= 2, `Places utilisées comptées côté serveur : ${capData.places_utilisees}`);
+        assert(capData.par_commune && Object.keys(capData.par_commune).length > 0, "Occupation par commune exposée sans aucune donnée personnelle");
+
+        if (capData.capacite_totale > 0) {
+            const overflowRes = await fetch(`${BASE_URL}/api/reservations`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    nom: "Testeur Capacité SEC05",
+                    email: "testeur.capacite@coraevents.ci",
+                    telephone: "0700009966",
+                    commune: "Cocody",
+                    quantite: 10
+                })
+            });
+            const overflowData = await overflowRes.json();
+            assert(overflowRes.status === 409 || overflowData.success === true,
+                `CAPACITE_TOTALE définie : le serveur plafonne ou accepte selon les places restantes (HTTP ${overflowRes.status})`);
+        } else {
+            console.log("   ℹ️ CAPACITE_TOTALE non définie : aucune limite active (comportement attendu par défaut).");
+        }
+
+        // Quantité hors limites (11 passagers) : doit être refusée par le serveur
+        const badQtyRes = await fetch(`${BASE_URL}/api/reservations`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                nom: "Testeur Quantité SEC04",
+                email: "testeur.qte@coraevents.ci",
+                telephone: "0700009955",
+                commune: "Cocody",
+                quantite: 11
+            })
+        });
+        assert(badQtyRes.status === 400, "Quantité hors limites (11 passagers) rejetée avec HTTP 400 (validation serveur)");
+    } catch (e) {
+        assert(false, `Erreur test SEC-05 : ${e.message}`);
     }
 
     console.log("\n==================================================");

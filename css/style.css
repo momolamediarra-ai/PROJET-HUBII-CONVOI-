@@ -1009,6 +1009,56 @@ button {
     color: var(--or-clair);
 }
 
+/* UX-01 : mise en évidence du total à chaque changement de quantité */
+.summary-total-val.total-pulse {
+    animation: totalPulse 0.45s ease;
+}
+
+@keyframes totalPulse {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.12); text-shadow: 0 0 18px rgba(197, 154, 68, 0.55); }
+    100% { transform: scale(1); }
+}
+
+/* SEC-05 : occupation des places par commune (tableau de bord admin) */
+.occupation-panel {
+    background: #FFFDF9;
+    border: 1px solid var(--bordure-claire);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+    margin-bottom: 24px;
+}
+
+.occupation-title {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--texte-sombre);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.occupation-par-commune {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.occupation-badge {
+    background: #FFFFFF;
+    border: 1px solid var(--bordure-claire);
+    border-radius: 20px;
+    padding: 5px 13px;
+    font-size: 12.5px;
+    color: var(--texte-muet);
+}
+
+.occupation-badge strong {
+    color: var(--or-fonce);
+    font-weight: 800;
+}
+
 .btn-submit-booking {
     width: 100%;
     padding: 17px 24px;
@@ -3641,4 +3691,4 @@ button {
         print-color-adjust: exact !important;
     }
 }
-
+

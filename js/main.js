@@ -35,15 +35,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 4000);
     }
 
-    // --- 2. CALCUL DU TOTAL ---
+    // --- 2. CALCUL DU TOTAL (UX-01 : total dynamique mis en évidence, y compris sur le bouton) ---
     function recalculerPrix() {
         const total = quantite * PRIX_UNITAIRE;
+        const totalFormate = `${total.toLocaleString("fr-FR")} FCFA`;
+
         if (affichageTotal) {
-            affichageTotal.textContent = `${total.toLocaleString("fr-FR")} FCFA`;
+            affichageTotal.textContent = totalFormate;
+            // Mise en évidence visuelle à chaque changement de quantité
+            affichageTotal.classList.remove("total-pulse");
+            void affichageTotal.offsetWidth;
+            affichageTotal.classList.add("total-pulse");
         }
         if (resumeDetail) {
             const passagerLabel = quantite > 1 ? "passagers" : "passager";
             resumeDetail.textContent = `${quantite} ${passagerLabel} × ${PRIX_UNITAIRE.toLocaleString("fr-FR")} FCFA`;
+        }
+        if (btnSubmit && !btnSubmit.disabled) {
+            btnSubmit.textContent = `Valider et payer ${totalFormate} →`;
         }
     }
 
@@ -312,41 +321,48 @@ document.addEventListener("DOMContentLoaded", () => {
                         commune: commune,
                         point_rassemblement: pointRassemblement,
                         ticket: "Pass Convoi Petit Paradis",
-                        quantite: quantite,
-                        prix_unitaire: PRIX_UNITAIRE,
-                        total: total
+                        quantite: quantite
                     })
                 });
 
                 const resultat = await reponse.json();
 
-                if (reponse.ok && resultat.success) {
-                    const resId = resultat.reservation_id;
-                    const reservationObj = {
-                        id: resId,
-                        nom: nom,
-                        email: email,
-                        telephone: telephone,
-                        commune: commune,
-                        point_rassemblement: pointRassemblement,
-                        ticket: "Pass Convoi Petit Paradis",
-                        quantite: quantite,
-                        prix_unitaire: PRIX_UNITAIRE,
-                        total: total,
-                        statut: "EN_ATTENTE",
-                        date_creation: new Date().toISOString()
-                    };
-
-                    localStorage.setItem("reservation_id", resId);
-                    localStorage.setItem("reservation_data", JSON.stringify(reservationObj));
-
-                    afficherToast("Réservation enregistrée ! Redirection vers le paiement Wave...", "success");
-
-                    setTimeout(() => {
-                        window.location.href = `paiement.html?id=${resId}`;
-                    }, 500);
+                // SEC-04 / SEC-05 : le serveur refuse les montants invalides ou un convoi complet
+                if (!reponse.ok || !resultat.success) {
+                    afficherToast(resultat.message || "Impossible d'enregistrer votre réservation.", "error");
+                    btnSubmit.disabled = false;
+                    recalculerPrix();
                     return;
                 }
+
+                const resId = resultat.reservation_id;
+                // Le montant affiché et mis en cache provient du calcul officiel du serveur
+                const montantServeur = Number(resultat.total) || total;
+                const prixServeur = Number(resultat.prix_unitaire) || PRIX_UNITAIRE;
+                const reservationObj = {
+                    id: resId,
+                    nom: nom,
+                    email: email,
+                    telephone: telephone,
+                    commune: commune,
+                    point_rassemblement: pointRassemblement,
+                    ticket: "Pass Convoi Petit Paradis",
+                    quantite: quantite,
+                    prix_unitaire: prixServeur,
+                    total: montantServeur,
+                    statut: "EN_ATTENTE",
+                    date_creation: new Date().toISOString()
+                };
+
+                localStorage.setItem("reservation_id", resId);
+                localStorage.setItem("reservation_data", JSON.stringify(reservationObj));
+
+                afficherToast("Réservation enregistrée ! Redirection vers le paiement...", "success");
+
+                setTimeout(() => {
+                    window.location.href = `paiement.html?id=${resId}`;
+                }, 500);
+                return;
             } catch (erreur) {
                 console.warn("Serveur Node.js non détecté, utilisation du mode direct :", erreur);
             }
@@ -371,7 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.setItem("reservation_id", localId);
             localStorage.setItem("reservation_data", JSON.stringify(localObj));
 
-            afficherToast("Réservation validée ! Redirection vers le paiement Wave...", "success");
+            afficherToast("Réservation validée ! Redirection vers le paiement...", "success");
 
             setTimeout(() => {
                 window.location.href = `paiement.html?id=${localId}`;
@@ -705,4 +721,4 @@ document.addEventListener("DOMContentLoaded", () => {
     initRippleEffect();
     initCursorGlow();
     initScrollSpy();
-});
+});

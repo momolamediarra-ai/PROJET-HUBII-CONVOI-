@@ -81,6 +81,10 @@ TURSO_AUTH_TOKEN=votre_token_turso
 NODE_ENV=production
 ```
 
+Options facultatives :
+- `PRIX_UNITAIRE` — prix officiel par passager en FCFA (défaut : 3000). Le total est toujours calculé côté serveur (SEC-04).
+- `CAPACITE_TOTALE` — plafond de places du convoi (SEC-05). Vide ou `0` = aucune limite ; en définissant une valeur, le serveur refuse automatiquement tout dépassement.
+
 > Le paiement se fait via le **lien de paiement Wave** (constante `LIEN_PAIEMENT_WAVE` dans `js/paiement.js` à remplir ultérieurement) — aucune clé API complexe n'est requise. Les délégués peuvent également valider les paiements reçus depuis l'espace admin (`✓ Valider`).
 
 ---

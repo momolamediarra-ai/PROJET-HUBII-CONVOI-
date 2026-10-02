@@ -102,6 +102,25 @@ function getSessionSecret() {
     return process.env.SESSION_SECRET || "petit-paradis-secret-local";
 }
 
+function getPrixUnitaire() {
+    // Prix officiel par passager (FCFA). Le serveur reste la seule source de vérité (SEC-04).
+    return Number(process.env.PRIX_UNITAIRE) || 3000;
+}
+
+function getCapaciteTotale() {
+    // Plafond de places du convoi (SEC-05). 0 ou absent = aucune limite.
+    return Number(process.env.CAPACITE_TOTALE) || 0;
+}
+
+async function getPlacesUtilisees() {
+    const row = await getOne(`
+        SELECT COALESCE(SUM(quantite), 0) AS total
+        FROM reservations
+        WHERE statut IS NULL OR statut != 'ANNULÉ'
+    `);
+    return Number(row ? row.total : 0) || 0;
+}
+
 function safeCompare(value, expected) {
     const left = Buffer.from(String(value || ""));
     const right = Buffer.from(String(expected || ""));
@@ -285,7 +304,7 @@ app.post("/api/admin/logout", (req, res) => {
     });
 });
 
-// Enregistrer une réservation avec anti-doublon / debouncing
+// Enregistrer une réservation — montants calculés côté serveur (SEC-04) & plafond de places atomique (SEC-05)
 app.post("/api/reservations", async (req, res) => {
     try {
         const {
@@ -295,9 +314,7 @@ app.post("/api/reservations", async (req, res) => {
             commune,
             point_rassemblement,
             ticket,
-            quantite,
-            prix_unitaire,
-            total
+            quantite
         } = req.body;
 
         if (!nom || !telephone) {
@@ -307,17 +324,47 @@ app.post("/api/reservations", async (req, res) => {
             });
         }
 
-        const safeNom = String(nom).trim();
+        const safeNom = String(nom).trim().slice(0, 120);
         const safeTelephone = String(telephone).replace(/[^0-9+]/g, "").trim();
-        const safeEmail = (email || "").trim();
-        const safeTicket = ticket || "Pass Convoi Petit Paradis";
-        const safeQuantite = Number(quantite) || 1;
-        const safePrix = Number(prix_unitaire) || 3000;
-        const safeTotal = Number(total) || (safeQuantite * safePrix);
-        const safeCommune = commune || "Non précisée";
-        const safePoint = point_rassemblement || "Point de sa commune";
+        const safeEmail = String(email || "").trim().slice(0, 160);
+        const safeTicket = ticket ? String(ticket).slice(0, 80) : "Pass Convoi Petit Paradis";
+        const safeCommune = String(commune || "Non précisée").slice(0, 60);
+        const safePoint = String(point_rassemblement || "Point de sa commune").slice(0, 120);
 
-        // Anti-doublon : vérifier si une réservation identique récente existe déjà en attente (< 60s)
+        if (safeNom.length < 2) {
+            return res.status(400).json({
+                success: false,
+                message: "Votre nom est trop court pour être enregistré."
+            });
+        }
+
+        if (safeTelephone.length < 8 || safeTelephone.length > 15) {
+            return res.status(400).json({
+                success: false,
+                message: "Numéro de téléphone invalide (8 à 15 chiffres attendus)."
+            });
+        }
+
+        if (safeEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safeEmail)) {
+            return res.status(400).json({
+                success: false,
+                message: "Adresse email invalide."
+            });
+        }
+
+        const quantiteNum = Number(quantite);
+        if (!Number.isInteger(quantiteNum) || quantiteNum < 1 || quantiteNum > 10) {
+            return res.status(400).json({
+                success: false,
+                message: "Quantité de places invalide (1 à 10 passagers par réservation)."
+            });
+        }
+
+        // SEC-04 : le prix et le total sont calculés ici — jamais depuis les valeurs envoyées par le client
+        const prixUnitaire = getPrixUnitaire();
+        const totalCalcule = quantiteNum * prixUnitaire;
+
+        // Anti-doublon : réutiliser une réservation identique déjà en attente
         const recentPending = await getOne(`
             SELECT id, statut FROM reservations
             WHERE telephone = ? AND nom = ? AND statut = 'EN_ATTENTE'
@@ -333,25 +380,63 @@ app.post("/api/reservations", async (req, res) => {
             });
         }
 
-        const result = await runQuery(`
-            INSERT INTO reservations
-            (nom, email, telephone, commune, point_rassemblement, ticket, quantite, prix_unitaire, total)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            safeNom,
-            safeEmail,
-            safeTelephone,
-            safeCommune,
-            safePoint,
-            safeTicket,
-            safeQuantite,
-            safePrix,
-            safeTotal
-        ]);
+        const capacite = getCapaciteTotale();
+        let result;
+
+        if (capacite > 0) {
+            // SEC-05 : insertion conditionnelle atomique — refusée si le plafond de places serait dépassé
+            result = await runQuery(`
+                INSERT INTO reservations
+                (nom, email, telephone, commune, point_rassemblement, ticket, quantite, prix_unitaire, total)
+                SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?
+                WHERE (SELECT COALESCE(SUM(quantite), 0) FROM reservations WHERE statut IS NULL OR statut != 'ANNULÉ') + ? <= ?
+            `, [
+                safeNom,
+                safeEmail,
+                safeTelephone,
+                safeCommune,
+                safePoint,
+                safeTicket,
+                quantiteNum,
+                prixUnitaire,
+                totalCalcule,
+                quantiteNum,
+                capacite
+            ]);
+
+            if (Number(result.rowsAffected) === 0) {
+                const restantes = Math.max(capacite - await getPlacesUtilisees(), 0);
+                return res.status(409).json({
+                    success: false,
+                    message: restantes > 0
+                        ? `Plus assez de places disponibles : il ne reste que ${restantes} place(s) pour ${quantiteNum} passager(s).`
+                        : "Complet : toutes les places du convoi sont déjà réservées.",
+                    places_restantes: restantes
+                });
+            }
+        } else {
+            result = await runQuery(`
+                INSERT INTO reservations
+                (nom, email, telephone, commune, point_rassemblement, ticket, quantite, prix_unitaire, total)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+                safeNom,
+                safeEmail,
+                safeTelephone,
+                safeCommune,
+                safePoint,
+                safeTicket,
+                quantiteNum,
+                prixUnitaire,
+                totalCalcule
+            ]);
+        }
 
         res.json({
             success: true,
             reservation_id: Number(result.lastInsertRowid),
+            prix_unitaire: prixUnitaire,
+            total: totalCalcule,
             message: "Réservation enregistrée avec succès."
         });
     } catch (err) {
@@ -359,6 +444,39 @@ app.post("/api/reservations", async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Erreur lors de l'enregistrement : " + err.message
+        });
+    }
+});
+
+// Occupation des places (agrégats publics, aucune donnée personnelle) — SEC-05
+app.get("/api/capacite", async (req, res) => {
+    try {
+        const capacite = getCapaciteTotale();
+        const utilisees = await getPlacesUtilisees();
+
+        const rows = await getAll(`
+            SELECT commune, COALESCE(SUM(quantite), 0) AS passagers
+            FROM reservations
+            WHERE statut IS NULL OR statut != 'ANNULÉ'
+            GROUP BY commune
+        `);
+
+        const parCommune = {};
+        rows.forEach((row) => {
+            parCommune[row.commune || "Non précisée"] = Number(row.passagers) || 0;
+        });
+
+        res.json({
+            success: true,
+            capacite_totale: capacite,
+            places_utilisees: utilisees,
+            places_restantes: capacite > 0 ? Math.max(capacite - utilisees, 0) : null,
+            par_commune: parCommune
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors du calcul de l'occupation des places : " + err.message
         });
     }
 });
