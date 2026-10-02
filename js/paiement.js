@@ -1,5 +1,5 @@
 /**
- * GESTION DU PAIEMENT — CORA EVENTS
+ * GESTION DU PAIEMENT WAVE — CORA EVENTS
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -10,22 +10,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const clientReservationId = document.getElementById("clientReservationId");
     const clientNom = document.getElementById("clientNom");
+    const clientEmail = document.getElementById("clientEmail");
     const clientTelephone = document.getElementById("clientTelephone");
     const clientCommune = document.getElementById("clientCommune");
     const clientPointRassemblement = document.getElementById("clientPointRassemblement");
     const clientTicket = document.getElementById("clientTicket");
     const clientQuantite = document.getElementById("clientQuantite");
     const clientTotal = document.getElementById("clientTotal");
-    const btnSaspayPaiement = document.getElementById("btnSaspayPaiement");
-    const btnSaspayMontant = document.getElementById("btnSaspayMontant");
-    const saspayNotice = document.getElementById("saspayNotice");
-    const saspayPostPaymentBox = document.getElementById("saspayPostPaymentBox");
+    const btnWavePaiement = document.getElementById("btnWavePaiement");
+    const btnWaveMontant = document.getElementById("btnWaveMontant");
+    const waveNotice = document.getElementById("waveNotice");
+    const wavePostPaymentBox = document.getElementById("wavePostPaymentBox");
     const btnConfirmerEtRecu = document.getElementById("btnConfirmerEtRecu");
     const dejaPayeBox = document.getElementById("dejaPayeBox");
     const btnVoirRecuDirect = document.getElementById("btnVoirRecuDirect");
 
-    // Lien officiel de paiement SASPay (menu "Liens de paiement" du tableau de bord SASPay)
-    const LIEN_PAIEMENT_SASPAY = "https://link.saspay.me/7sdjyxq84sg";
+    // =========================================================================
+    // LIEN OFFICIEL DE PAIEMENT WAVE (Laissé vide — à renseigner ultérieurement)
+    // =========================================================================
+    const LIEN_PAIEMENT_WAVE = "";
 
     const POINTS_RASSEMBLEMENT_MAP = {
         "Anyama": "Gare d'Anyama",
@@ -88,6 +91,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (clientReservationId) clientReservationId.textContent = `#PP-${String(reservation.id).padStart(4, "0")}`;
     if (clientNom) clientNom.textContent = reservation.nom;
+    if (clientEmail) clientEmail.textContent = reservation.email || "Non précisée";
     if (clientTelephone) clientTelephone.textContent = reservation.telephone;
     if (clientCommune) clientCommune.textContent = reservation.commune || "Non précisée";
     if (clientPointRassemblement) clientPointRassemblement.textContent = lieuPoint;
@@ -105,14 +109,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const totalFormate = `${Number(reservation.total).toLocaleString("fr-FR")} FCFA`;
     if (clientTotal) clientTotal.textContent = totalFormate;
-    if (btnSaspayMontant) btnSaspayMontant.textContent = totalFormate;
+    if (btnWaveMontant) btnWaveMontant.textContent = totalFormate;
 
     // Fonction pour afficher l'état Payé
     function activerEtatPaye() {
         if (dejaPayeBox) dejaPayeBox.style.display = "block";
-        if (btnSaspayPaiement) btnSaspayPaiement.style.display = "none";
-        if (saspayPostPaymentBox) saspayPostPaymentBox.style.display = "none";
-        if (saspayNotice) saspayNotice.style.display = "none";
+        if (btnWavePaiement) btnWavePaiement.style.display = "none";
+        if (wavePostPaymentBox) wavePostPaymentBox.style.display = "none";
+        if (waveNotice) waveNotice.style.display = "none";
         if (btnVoirRecuDirect) {
             btnVoirRecuDirect.href = `recu.html?id=${reservation.id}`;
         }
@@ -150,7 +154,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         localStorage.setItem("reservation_data", JSON.stringify(reservation));
         localStorage.setItem("reservation_id", reservation.id);
 
-        // Redirection directe vers la page de reçu
+        // Redirection directe vers la page de reçu avec paid=1
         window.location.href = `recu.html?id=${reservation.id}&paid=1`;
     }
 
@@ -160,22 +164,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-    // Clic sur "Payer avec SASPay"
-    if (btnSaspayPaiement) {
-        btnSaspayPaiement.addEventListener("click", () => {
-            if (saspayNotice) {
-                saspayNotice.style.display = "block";
+    // Clic sur "Payer avec Wave"
+    if (btnWavePaiement) {
+        btnWavePaiement.addEventListener("click", () => {
+            if (waveNotice) {
+                waveNotice.style.display = "block";
             }
-            if (saspayPostPaymentBox) {
-                saspayPostPaymentBox.style.display = "block";
+            if (wavePostPaymentBox) {
+                wavePostPaymentBox.style.display = "block";
             }
 
-            // Ouverture de la page SASPay officielle
-            window.open(LIEN_PAIEMENT_SASPAY, "_blank");
+            // Si le lien Wave est configuré, on l'ouvre
+            if (LIEN_PAIEMENT_WAVE && LIEN_PAIEMENT_WAVE.trim() !== "" && LIEN_PAIEMENT_WAVE !== "#") {
+                window.open(LIEN_PAIEMENT_WAVE, "_blank");
+            } else {
+                console.info("Lien Wave non configuré (en attente de saisie).");
+            }
         });
     }
 
-    // Clic sur "J'ai payé -> Télécharger mon Reçu & Pass"
+    // Clic sur "J'ai payé sur Wave -> Télécharger mon Reçu & Pass"
     if (btnConfirmerEtRecu) {
         btnConfirmerEtRecu.addEventListener("click", () => {
             validerPaiementEtRediriger();

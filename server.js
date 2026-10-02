@@ -36,6 +36,7 @@ async function initDatabase() {
         CREATE TABLE IF NOT EXISTS reservations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nom TEXT NOT NULL,
+            email TEXT,
             telephone TEXT NOT NULL,
             commune TEXT,
             point_rassemblement TEXT,
@@ -47,6 +48,12 @@ async function initDatabase() {
             date_creation DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
+
+    try {
+        await db.execute(`ALTER TABLE reservations ADD COLUMN email TEXT`);
+    } catch (e) {
+        // Colonne déjà présente
+    }
 
     try {
         await db.execute(`ALTER TABLE reservations ADD COLUMN commune TEXT`);
@@ -224,6 +231,7 @@ app.post("/api/reservations", async (req, res) => {
     try {
         const {
             nom,
+            email,
             telephone,
             commune,
             point_rassemblement,
@@ -240,6 +248,7 @@ app.post("/api/reservations", async (req, res) => {
             });
         }
 
+        const safeEmail = (email || "").trim();
         const safeTicket = ticket || "Pass Convoi Petit Paradis";
         const safeQuantite = Number(quantite) || 1;
         const safePrix = Number(prix_unitaire) || 3000;
@@ -249,10 +258,11 @@ app.post("/api/reservations", async (req, res) => {
 
         const result = await runQuery(`
             INSERT INTO reservations
-            (nom, telephone, commune, point_rassemblement, ticket, quantite, prix_unitaire, total)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (nom, email, telephone, commune, point_rassemblement, ticket, quantite, prix_unitaire, total)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             nom,
+            safeEmail,
             telephone,
             safeCommune,
             safePoint,
@@ -323,7 +333,7 @@ app.get("/api/reservations/:id", async (req, res) => {
     }
 });
 
-// Marquer une réservation comme PAYÉ (Validation client après SASPay)
+// Marquer une réservation comme PAYÉ (Validation client après Wave)
 app.post("/api/reservations/:id/confirmer-paiement", async (req, res) => {
     try {
         const id = Number(req.params.id);
@@ -352,7 +362,7 @@ app.post("/api/reservations/:id/confirmer-paiement", async (req, res) => {
 
         res.json({
             success: true,
-            message: "Paiement SASPay validé avec succès !",
+            message: "Paiement Wave validé avec succès !",
             reservation: updated
         });
     } catch (err) {
@@ -364,11 +374,11 @@ app.post("/api/reservations/:id/confirmer-paiement", async (req, res) => {
     }
 });
 
-// Webhook / Callback SASPay
-app.all(["/api/webhook/saspay", "/api/saspay/callback"], async (req, res) => {
+// Webhook / Callback Wave & Passerelles
+app.all(["/api/webhook/wave", "/api/wave/callback", "/api/webhook/saspay", "/api/saspay/callback"], async (req, res) => {
     try {
         const data = req.body || req.query || {};
-        console.log("Notification reçue de SASPay :", data);
+        console.log("Notification de paiement reçue :", data);
 
         const reservationId = data.custom_data || data.reservation_id || data.reference || data.id;
 
@@ -383,9 +393,9 @@ app.all(["/api/webhook/saspay", "/api/saspay/callback"], async (req, res) => {
             }
         }
 
-        res.json({ success: true, message: "Webhook SASPay traité avec succès" });
+        res.json({ success: true, message: "Webhook de paiement traité avec succès" });
     } catch (err) {
-        console.error("Erreur Webhook SASPay :", err);
+        console.error("Erreur Webhook paiement :", err);
         res.status(500).json({ success: false, message: err.message });
     }
 });

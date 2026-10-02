@@ -42,6 +42,7 @@
             </div>
 
             <!-- Indicateur d'étapes -->
+            <!-- Indicateur d'étapes -->
             <div class="payment-steps">
                 <div class="payment-step-item active">
                     <div class="step-number">✓</div>
@@ -49,7 +50,7 @@
                 </div>
                 <div class="payment-step-item active">
                     <div class="step-number">2</div>
-                    <span>Paiement SASPay</span>
+                    <span>Paiement Wave</span>
                 </div>
                 <div class="payment-step-item">
                     <div class="step-number">3</div>
@@ -66,6 +67,10 @@
                 <div class="receipt-row">
                     <span>Nom & Prénoms</span>
                     <strong id="clientNom">—</strong>
+                </div>
+                <div class="receipt-row">
+                    <span>Adresse Email</span>
+                    <strong id="clientEmail" style="color: var(--or-fonce); word-break: break-all;">—</strong>
                 </div>
                 <div class="receipt-row">
                     <span>Téléphone</span>
@@ -111,44 +116,47 @@
                 📍 <strong>Rappel départ :</strong> Le matin du dimanche 13 décembre à 08h30, rendez-vous directement à votre point de commune ci-dessus et <u>non à la Gendarmerie d'Abobo</u> (réservée à Abobo).
             </div>
 
-            <!-- Boîte d'Intégration SASPay -->
-            <div class="saspay-action-box card-spotlight" id="saspayBox">
-                <div class="saspay-header">
-                    <div class="saspay-badge">
-                        <span class="live-pulse-dot"></span> Passerelle Officielle
+            <!-- Boîte d'Intégration Wave -->
+            <div class="wave-action-box card-spotlight" id="waveBox">
+                <div class="wave-header">
+                    <div class="wave-badge">
+                        <span class="live-pulse-dot"></span> Paiement Officiel Wave
                     </div>
-                    <div class="saspay-logo-tag">SAS<span>PAY</span></div>
+                    <div class="wave-logo-tag">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color: #1DC4FE;"><circle cx="12" cy="12" r="10"/><path d="M7 12c1.5-2 3.5-2 5 0 1.5 2 3.5 2 5 0" stroke="#000" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                        <span>WAVE</span> MOBILE
+                    </div>
                 </div>
 
-                <h3>Règlement Sécurisé en Ligne</h3>
+                <h3>Règlement Sécurisé via Wave</h3>
                 <p style="color: #D3CAD0; font-size: 14px; max-width: 480px; margin: 0 auto 18px; line-height: 1.5;">
-                    Réglez en toute sécurité via <strong>SASPay</strong> par Wave, Orange Money, MTN MoMo, Moov Money ou Carte bancaire.
+                    Réglez simplement et instantanément vos places avec l'application <strong>Wave</strong> sur votre smartphone.
                 </p>
 
-                <!-- Étape 1 : Bouton d'ouverture du lien SASPay -->
-                <button type="button" id="btnSaspayPaiement" class="btn-primary saspay-btn-checkout">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                    <span>1. Payer avec SASPay</span> (<span id="btnSaspayMontant">0 FCFA</span>)
+                <!-- Étape 1 : Bouton d'ouverture du lien Wave -->
+                <button type="button" id="btnWavePaiement" class="btn-primary wave-btn-checkout">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                    <span>1. Payer avec Wave</span> (<span id="btnWaveMontant">0 FCFA</span>)
                 </button>
 
-                <div id="saspayNotice" style="display: none; margin-top: 18px; font-size: 13.5px; color: var(--or-clair); background: rgba(197, 154, 68, 0.14); padding: 14px; border-radius: 12px; border: 1px dashed var(--or); text-align: left; line-height: 1.5;">
+                <div id="waveNotice" style="display: none; margin-top: 18px; font-size: 13.5px; color: var(--or-clair); background: rgba(29, 196, 254, 0.1); padding: 14px; border-radius: 12px; border: 1px dashed #1DC4FE; text-align: left; line-height: 1.5;">
                     <div style="display: flex; align-items: flex-start; gap: 10px;">
-                        <span style="font-size: 18px;">↗️</span>
+                        <span style="font-size: 18px;">🌊</span>
                         <div>
-                            <strong>Paiement en cours sur SASPay :</strong><br>
-                            Complétez votre paiement dans la page SASPay ouverte, puis cliquez sur le bouton vert ci-dessous pour obtenir et télécharger immédiatement votre reçu.
+                            <strong style="color: #1DC4FE;">Paiement Wave en cours :</strong><br>
+                            Complétez votre règlement sur Wave, puis cliquez sur le bouton vert ci-dessous pour obtenir et télécharger immédiatement votre reçu officiel avec son QR Code.
                         </div>
                     </div>
                 </div>
 
                 <!-- Étape 2 : Confirmation après paiement & téléchargement immédiat du reçu -->
-                <div id="saspayPostPaymentBox" style="margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(197, 154, 68, 0.25);">
+                <div id="wavePostPaymentBox" style="margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(197, 154, 68, 0.25);">
                     <p style="font-size: 13.5px; color: #E5E0D8; margin-bottom: 12px;">
-                        Vous avez finalisé votre paiement sur SASPay ?
+                        Vous avez finalisé votre règlement sur Wave ?
                     </p>
                     <button type="button" id="btnConfirmerEtRecu" class="btn-primary" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%); color: #FFF; font-weight: 800; font-size: 15px; box-shadow: 0 8px 20px rgba(34, 197, 94, 0.35);">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        <span>J'ai payé → Télécharger mon Reçu & Pass</span>
+                        <span>J'ai payé sur Wave → Télécharger mon Reçu & Pass</span>
                     </button>
                 </div>
 
@@ -158,7 +166,7 @@
                         ✓ Réservation Confirmée & Payée !
                     </div>
                     <p style="font-size: 13px; color: #FFF; margin-bottom: 14px;">
-                        Votre paiement a bien été enregistré. Votre Pass d'embarquement officiel est prêt.
+                        Votre paiement a bien été enregistré. Votre Pass d'embarquement officiel muni de son QR Code est prêt.
                     </p>
                     <a href="recu.html" id="btnVoirRecuDirect" class="btn-primary" style="display: inline-flex; justify-content: center; width: 100%; background: var(--or);">
                         🎫 Télécharger mon Pass d'embarquement
@@ -167,7 +175,7 @@
 
                 <div style="font-size: 12px; color: var(--texte-clair-muet); margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    Paiement crypté 256-bit certifié SASPay • Reçu PDF instantané
+                    Paiement 100% sécurisé via Wave • Reçu & Pass avec QR Code instantané
                 </div>
             </div>
 

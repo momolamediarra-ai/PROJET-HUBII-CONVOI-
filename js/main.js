@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let quantite = 1;
 
     const champNom = document.getElementById("nom");
+    const champEmail = document.getElementById("email");
     const champTelephone = document.getElementById("telephone");
     const champCommune = document.getElementById("commune");
     const champQuantite = document.getElementById("quantite");
@@ -261,12 +262,19 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
 
             const nom = champNom.value.trim();
+            const email = champEmail ? champEmail.value.trim() : "";
             const telephone = champTelephone.value.trim();
             const commune = champCommune.value;
 
             if (!nom) {
                 afficherToast("Veuillez renseigner votre nom et vos prénoms.", "error");
                 champNom.focus();
+                return;
+            }
+
+            if (!email || !email.includes("@")) {
+                afficherToast("Veuillez renseigner une adresse email valide.", "error");
+                if (champEmail) champEmail.focus();
                 return;
             }
 
@@ -299,6 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     },
                     body: JSON.stringify({
                         nom: nom,
+                        email: email,
                         telephone: telephone,
                         commune: commune,
                         point_rassemblement: pointRassemblement,
@@ -316,6 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const reservationObj = {
                         id: resId,
                         nom: nom,
+                        email: email,
                         telephone: telephone,
                         commune: commune,
                         point_rassemblement: pointRassemblement,
@@ -330,7 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     localStorage.setItem("reservation_id", resId);
                     localStorage.setItem("reservation_data", JSON.stringify(reservationObj));
 
-                    afficherToast("Réservation enregistrée ! Redirection vers le paiement...", "success");
+                    afficherToast("Réservation enregistrée ! Redirection vers le paiement Wave...", "success");
 
                     setTimeout(() => {
                         window.location.href = `paiement.html?id=${resId}`;
@@ -346,6 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const localObj = {
                 id: localId,
                 nom: nom,
+                email: email,
                 telephone: telephone,
                 commune: commune,
                 point_rassemblement: pointRassemblement,
@@ -360,7 +371,7 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.setItem("reservation_id", localId);
             localStorage.setItem("reservation_data", JSON.stringify(localObj));
 
-            afficherToast("Réservation validée ! Redirection vers le paiement...", "success");
+            afficherToast("Réservation validée ! Redirection vers le paiement Wave...", "success");
 
             setTimeout(() => {
                 window.location.href = `paiement.html?id=${localId}`;

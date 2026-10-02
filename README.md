@@ -17,15 +17,16 @@ Ce site a été conçu avec une direction artistique haut de gamme et humaine, a
 
 | Fichier / Dossier | Description |
 | :--- | :--- |
-| `index.html` | Page d'accueil officielle : Héro avec affiche du convoi, compte à rebours vivant, programme heure par heure, billetterie dynamique, checklist du voyageur, consignes, témoignages, partage WhatsApp, FAQ et contact. |
-| `paiement.html` | Page de règlement en 3 étapes avec récapitulatif nominatif, bouton Wave direct et accès au pass. |
-| `recu.html` | Pass d'embarquement officiel (e-billet) prêt à l'impression ou capture smartphone avec code d'embarquement. |
-| `admin.html` | Espace Délégués & Organisation : console de bord avec KPIs en direct, recherche instantanée, filtres et feuille d'émargement imprimable. |
+| `index.html` | Page d'accueil officielle : Héro avec affiche du convoi, compte à rebours vivant, programme heure par heure, billetterie dynamique (avec Email), checklist du voyageur, consignes, témoignages, partage WhatsApp, FAQ et contact. |
+| `paiement.html` | Page de règlement en 3 étapes avec récapitulatif nominatif (Email inclus), passerelle Wave dédiée et accès au pass. |
+| `recu.html` | Pass d'embarquement officiel (e-billet) prêt à l'impression avec QR Code certifié propre au titulaire. |
+| `admin.html` | Espace Délégués & Organisation : console de bord avec KPIs en direct, recherche instantanée par nom/email/téléphone, filtres et feuille d'émargement imprimable. |
 | `css/style.css` | Feuille de style complète, modulaire et responsive (mobile, tablette, desktop, print). |
-| `js/main.js` | Logique d'interaction : compte à rebours temps réel, ajusteur de passagers (`+`/`-`), calcul dynamique, accordéons FAQ et notifications toast. |
-| `js/paiement.js` | Chargement dynamique de la réservation et redirection vers le lien de paiement officiel SASPay. |
-| `js/recu.js` | Génération et affichage du pass d'embarquement officiel. |
-| `js/admin.js` | Gestion de l'espace délégués (authentification, statistiques, pointage, suppression). |
+| `js/qrcode.min.js` | Générateur autonome de QR Code haute définition pour le pass d'embarquement. |
+| `js/main.js` | Logique d'interaction : compte à rebours temps réel, formulaire de réservation avec email, calcul dynamique, accordéons FAQ et notifications toast. |
+| `js/paiement.js` | Chargement dynamique de la réservation et intégration du paiement Wave (lien personnalisable). |
+| `js/recu.js` | Génération dynamique du QR Code nominatif et affichage du pass d'embarquement officiel. |
+| `js/admin.js` | Gestion de l'espace délégués (authentification, statistiques, pointage, suppression, affichage des emails). |
 | `server.js` | Serveur Node.js / Express avec base de données cloud **Turso** (`@libsql/client`), authentification admin par cookie signé et API REST (compatible Vercel serverless). |
 | `image/` | Affiche officielle du convoi (`petit paris.jpg`) et logo CORA EVENTS (`cora_event.png.jpeg`). |
 
@@ -68,6 +69,6 @@ L'espace délégué permet aux organisateurs (le jour J à la Gendarmerie d'Abob
 ## 📞 Support & Coordination
 
 * **Organisation :** CORA_EVENT
-* **Coordination :** Diarra Mohamed Lamine
+* **Coordination :** Dao habiba
 * **Téléphone :** 05 03 52 61 91 / 01 05 24 52 25
 * **WhatsApp :** +225 01 05 24 52 25

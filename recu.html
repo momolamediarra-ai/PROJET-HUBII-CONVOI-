@@ -56,12 +56,19 @@
 
                 <div class="boarding-grid-2">
                     <div class="boarding-info-block">
+                        <span>Adresse Email</span>
+                        <strong id="recuEmail" style="color: var(--texte-sombre); word-break: break-all;">—</strong>
+                    </div>
+                    <div class="boarding-info-block">
                         <span>Commune de départ</span>
                         <strong id="recuCommune">—</strong>
                     </div>
-                    <div class="boarding-info-block">
-                        <span>Point de Rassemblement</span>
-                        <strong id="recuPoint" style="color: var(--or-fonce);">—</strong>
+                </div>
+
+                <div class="boarding-grid-2">
+                    <div class="boarding-info-block" style="grid-column: 1 / -1; background: rgba(197, 154, 68, 0.08); padding: 10px 14px; border-radius: var(--radius-sm);">
+                        <span>Lieu & Point de Rassemblement</span>
+                        <strong id="recuPoint" style="color: var(--or-fonce); font-size: 16px;">—</strong>
                     </div>
                 </div>
 
@@ -106,18 +113,26 @@
                         <span id="recuStatut" class="boarding-status-pill status-paid">Validé & Confirmé</span>
                     </div>
                     <div class="boarding-info-block" style="text-align: right;">
-                        <span>Paiement</span>
-                        <strong style="font-size: 13.5px; color: var(--or-fonce);">SASPay Mobile Money</strong>
+                        <span>Mode de Règlement</span>
+                        <strong style="font-size: 13.5px; color: #0284C7; display: inline-flex; align-items: center; gap: 4px; justify-content: flex-end;">
+                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #1DC4FE;"></span> Wave Mobile Money
+                        </strong>
                     </div>
                 </div>
 
-                <!-- Bandeau Code d'Embarquement Visuel -->
-                <div class="barcode-strip">
-                    <div class="barcode-graphic" id="recuBarcode">
-                        ||| | |||| | ||| |||| | ||||| | |||
-                    </div>
-                    <div style="font-size: 11px; color: var(--texte-muet); margin-top: 6px; letter-spacing: 0.5px;">
-                        Présentez ce billet numérique ou imprimé au délégué lors de la montée dans le car.
+                <!-- Section QR Code d'Embarquement Officiel -->
+                <div class="ticket-qr-section">
+                    <div class="ticket-qr-container">
+                        <div id="recuQRCode" class="ticket-qr-box">
+                            <!-- Canvas QR Code généré par js/recu.js -->
+                        </div>
+                        <div class="ticket-qr-meta">
+                            <span class="qr-secure-badge">🔒 Billet Sécurisé & Certifié</span>
+                            <strong id="recuQRRef" style="font-family: 'Outfit', sans-serif; font-size: 16px; color: var(--texte-sombre); margin-top: 2px;">#PP-0000</strong>
+                            <p style="font-size: 11.5px; color: var(--texte-muet); margin-top: 4px; line-height: 1.4;">
+                                QR Code unique et propre au titulaire. Présentez ce code aux délégués pour le contrôle d'accès dans le car.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -154,7 +169,8 @@
 
     </div>
 
-    <!-- Script de chargement dynamique -->
+    <!-- Scripts : Générateur QRCode autonome + Affichage du Reçu -->
+    <script src="js/qrcode.min.js"></script>
     <script src="js/recu.js"></script>
 </body>
 </html>

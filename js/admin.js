@@ -190,6 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const matchSearch =
                 !recherche ||
                 (r.nom && r.nom.toLowerCase().includes(recherche)) ||
+                (r.email && r.email.toLowerCase().includes(recherche)) ||
                 (r.telephone && r.telephone.includes(recherche)) ||
                 `#pp-${r.id}`.includes(recherche);
 
@@ -212,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (liste.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="9" style="text-align: center; padding: 40px; color: var(--texte-muet);">
+                    <td colspan="10" style="text-align: center; padding: 40px; color: var(--texte-muet);">
                         Aucune réservation ne correspond à vos critères de recherche.
                     </td>
                 </tr>
@@ -253,6 +254,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     </td>
                     <td>
                         <strong style="color: var(--texte-sombre);">${r.nom}</strong>
+                    </td>
+                    <td>
+                        ${r.email ? `<a href="mailto:${r.email}" style="color: var(--texte-muet); font-size: 13px;">${r.email}</a>` : `<span style="color: var(--texte-muet);">—</span>`}
                     </td>
                     <td>
                         <a href="tel:${r.telephone}" style="color: var(--or-fonce); font-weight: 600;">${r.telephone}</a>

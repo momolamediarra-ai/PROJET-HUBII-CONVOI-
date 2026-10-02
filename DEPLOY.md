@@ -81,7 +81,7 @@ TURSO_AUTH_TOKEN=votre_token_turso
 NODE_ENV=production
 ```
 
-> Le paiement se fait via le **lien officiel SASPay** (constante `LIEN_PAIEMENT_SASPAY` dans `js/paiement.js`) — aucune clé API SASPay n'est nécessaire. Les délégués valident les paiements reçus depuis la page admin (`✓ Valider`).
+> Le paiement se fait via le **lien de paiement Wave** (constante `LIEN_PAIEMENT_WAVE` dans `js/paiement.js` à remplir ultérieurement) — aucune clé API complexe n'est requise. Les délégués peuvent également valider les paiements reçus depuis l'espace admin (`✓ Valider`).
 
 ---
 
