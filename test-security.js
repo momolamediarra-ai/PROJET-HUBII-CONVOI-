@@ -137,10 +137,14 @@ async function runTests() {
     // --- TEST 6 : SEC-04 — Manipulation du montant impossible (calcul 100% serveur) ---
     console.log("\n6️⃣ Test SEC-04 : Le montant est toujours calculé côté serveur :");
     try {
+        // Téléphone unique à chaque exécution : sinon l'anti-doublon du serveur
+        // réutilise la réservation en attente laissée par l'exécution précédente
+        // (et la réponse ne contient alors ni total ni prix_unitaire).
+        const telUnique = "07" + String(Date.now()).slice(-8);
         const tamperedPayload = {
             nom: "Testeur Montant SEC04",
             email: "testeur.montant@coraevents.ci",
-            telephone: "0700009977",
+            telephone: telUnique,
             commune: "Abobo",
             point_rassemblement: "Gendarmerie d'Abobo",
             ticket: "Pass Convoi Petit Paradis",

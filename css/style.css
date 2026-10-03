@@ -1456,53 +1456,6 @@ button {
     background: #1EBE5D;
 }
 
-/* --- Bouton WhatsApp Groupe Flottant --- */
-.floating-whatsapp {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    z-index: 999;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.whatsapp-bubble {
-    background: var(--blanc);
-    color: var(--texte-sombre);
-    padding: 8px 14px;
-    border-radius: var(--radius-full);
-    font-size: 13px;
-    font-weight: 600;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    white-space: nowrap;
-    border: 1px solid var(--bordure-claire);
-    animation: floatTooltip 3s ease-in-out infinite;
-}
-
-@keyframes floatTooltip {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
-}
-
-.whatsapp-circle-btn {
-    width: 58px;
-    height: 58px;
-    border-radius: 50%;
-    background: #25D366;
-    color: #FFF;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
-    transition: var(--transition);
-}
-
-.whatsapp-circle-btn:hover {
-    transform: scale(1.08) rotate(4deg);
-    background: #1EBE5D;
-}
-
 /* --- Toast Notification --- */
 .toast-notice {
     position: fixed;
@@ -2849,21 +2802,31 @@ button {
    ========================================================================== */
 
 /* --- 1. Barre de Progression de Défilement (Top Scroll Bar) --- */
+/* Correctif anti-bug : le JavaScript pilote UNIQUEMENT le transform (scaleX) de la barre.
+   Le dégradé doré qui défile vit dans ::before, et la barre n'a plus ni animation
+   ni transition sur son transform : le scaleX calculé est donc toujours exact.
+   (Avant, animation + transition sur le même élément faussaient la valeur calculée,
+   qui restait bloquée à zéro au lieu de suivre le scroll.) */
 .scroll-progress-bar {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 3.5px;
-    background: linear-gradient(90deg, #C59A44, #F5D38C, #E6A23C, #4A151E, #DFBA73);
-    background-size: 300% 100%;
     transform-origin: left;
     transform: scaleX(0);
     z-index: 9999;
-    box-shadow: 0 0 12px rgba(197, 154, 68, 0.75), 0 0 24px rgba(223, 186, 115, 0.4);
-    animation: gradientMove 6s linear infinite;
     pointer-events: none;
-    transition: transform 0.08s ease-out;
+}
+
+.scroll-progress-bar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, #C59A44, #F5D38C, #E6A23C, #4A151E, #DFBA73);
+    background-size: 300% 100%;
+    animation: gradientMove 6s linear infinite;
+    box-shadow: 0 0 12px rgba(197, 154, 68, 0.75), 0 0 24px rgba(223, 186, 115, 0.4);
 }
 
 @keyframes gradientMove {
@@ -3689,6 +3652,26 @@ button {
         border: 2px solid #000000 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+    }
+}
+
+/* --- 15. Accessibilité : on respecte ceux qui préfèrent moins de mouvement ---
+   Si la personne a activé « Réduire les animations » sur son téléphone
+   ou son ordinateur, le site reste doux : tout arrive sans secousse. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    [data-reveal],
+    .stagger-group > * {
+        opacity: 1 !important;
+        transform: none !important;
     }
 }
 

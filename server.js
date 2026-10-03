@@ -249,7 +249,7 @@ app.post("/api/admin/login", (req, res) => {
     if (!email || !password) {
         return res.status(400).json({
             success: false,
-            message: "Veuillez remplir tous les champs."
+            message: "Remplissez tous les champs, s'il vous plaît."
         });
     }
 
@@ -320,7 +320,7 @@ app.post("/api/reservations", async (req, res) => {
         if (!nom || !telephone) {
             return res.status(400).json({
                 success: false,
-                message: "Veuillez renseigner votre nom et votre numéro de téléphone."
+                message: "Il nous faut votre nom et votre numéro de téléphone, s'il vous plaît."
             });
         }
 
@@ -334,21 +334,21 @@ app.post("/api/reservations", async (req, res) => {
         if (safeNom.length < 2) {
             return res.status(400).json({
                 success: false,
-                message: "Votre nom est trop court pour être enregistré."
+                message: "Votre nom semble trop court — écrivez-le en entier, s'il vous plaît."
             });
         }
 
         if (safeTelephone.length < 8 || safeTelephone.length > 15) {
             return res.status(400).json({
                 success: false,
-                message: "Numéro de téléphone invalide (8 à 15 chiffres attendus)."
+                message: "Ce numéro de téléphone n'est pas valide (8 à 15 chiffres). Vérifiez, s'il vous plaît."
             });
         }
 
         if (safeEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safeEmail)) {
             return res.status(400).json({
                 success: false,
-                message: "Adresse email invalide."
+                message: "L'adresse email ne semble pas bonne — vérifiez-la, s'il vous plaît."
             });
         }
 
@@ -356,7 +356,7 @@ app.post("/api/reservations", async (req, res) => {
         if (!Number.isInteger(quantiteNum) || quantiteNum < 1 || quantiteNum > 10) {
             return res.status(400).json({
                 success: false,
-                message: "Quantité de places invalide (1 à 10 passagers par réservation)."
+                message: "Quantité invalide : de 1 à 10 passagers par réservation. Pour un groupe plus grand, appelez-nous directement."
             });
         }
 
@@ -409,8 +409,8 @@ app.post("/api/reservations", async (req, res) => {
                 return res.status(409).json({
                     success: false,
                     message: restantes > 0
-                        ? `Plus assez de places disponibles : il ne reste que ${restantes} place(s) pour ${quantiteNum} passager(s).`
-                        : "Complet : toutes les places du convoi sont déjà réservées.",
+                        ? `Il ne reste que ${restantes} place(s) pour ${quantiteNum} passager(s) demandé(s). Réduisez la quantité ou appelez-nous vite.`
+                        : "Le convoi est complet : toutes les places sont déjà prises. Merci de votre compréhension !",
                     places_restantes: restantes
                 });
             }

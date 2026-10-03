@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (loadingEl) {
             loadingEl.innerHTML = `
                 <div style="padding: 20px;">
-                    <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">Numéro de réservation introuvable.</p>
+                    <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">Oups, on ne trouve pas votre numéro de réservation.</p>
                     <a href="index.html#billetterie" class="btn-primary" style="display: inline-flex; font-size: 14px;">Retourner à la billetterie</a>
                 </div>
             `;
@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (loadingEl) {
                 loadingEl.innerHTML = `
                     <div style="padding: 20px;">
-                        <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">Dossier de réservation #${id} introuvable.</p>
+                        <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">On ne trouve pas le dossier #${id}. Vérifiez le lien, s'il vous plaît.</p>
                         <a href="index.html#billetterie" class="btn-primary" style="display: inline-flex; font-size: 14px;">Retourner à la billetterie</a>
                     </div>
                 `;
@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <div style="font-size: 32px; margin-bottom: 10px;">⏳</div>
                         <h3 style="color: #b91c1c; font-weight: 800; font-size: 18px; margin-bottom: 8px;">Paiement en attente de validation</h3>
                         <p style="margin-bottom: 18px; font-size: 14px; color: var(--texte-muet); line-height: 1.5;">
-                            Votre réservation <strong>#PP-${String(res.id).padStart(4, "0")}</strong> est enregistrée. Si vous venez d'effectuer votre règlement sur <strong>Wave</strong>, débloquez immédiatement votre reçu officiel ci-dessous :
+                            Votre réservation <strong>#PP-${String(res.id).padStart(4, "0")}</strong> est bien enregistrée, ne bougez pas. Si vous venez de régler sur <strong>Wave</strong>, débloquez votre reçu tout de suite avec le bouton ci-dessous :
                         </p>
                         <div style="display: flex; flex-direction: column; gap: 10px; max-width: 360px; margin: 0 auto;">
                             <button type="button" id="btnDebloquerRecu" class="btn-primary" style="justify-content: center; background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);">
@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (btnDebloquer) {
                     btnDebloquer.addEventListener("click", async () => {
                         btnDebloquer.disabled = true;
-                        btnDebloquer.textContent = "Déblocage du reçu en cours...";
+                        btnDebloquer.textContent = "On débloque votre reçu, une seconde...";
                         try {
                             await fetch(`/api/reservations/${id}/confirmer-paiement`, {
                                 method: "POST",
@@ -222,7 +222,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Configurer le lien WhatsApp pour recevoir/sauvegarder une preuve
         if (btnShareWhatsApp) {
             const msgWhatsApp = encodeURIComponent(
-                `*PASS OFFICIEL D'EMBARQUEMENT — CORA EVENTS*\n` +
+                `Assalamu alaykum ! Voici mon pass officiel du convoi Petit Paradis :\n\n` +
+                `*PASS D'EMBARQUEMENT — CORA EVENTS*\n` +
                 `Dossier N° : ${codeDossier}\n` +
                 `Nom : ${res.nom}\n` +
                 (res.email ? `Email : ${res.email}\n` : '') +
@@ -245,7 +246,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (loadingEl) {
             loadingEl.innerHTML = `
                 <div style="padding: 20px;">
-                    <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">Erreur lors de la récupération de votre pass.</p>
+                    <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">On n'a pas réussi à charger votre pass. Réessayez dans un instant.</p>
                     <a href="index.html" class="btn-primary" style="display: inline-flex; font-size: 14px;">Retourner à l'accueil</a>
                 </div>
             `;

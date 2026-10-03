@@ -440,7 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await res.json();
 
             if (data.success) {
-                notifier(`Réservation #${id} validée avec succès !`, "success");
+                notifier(`C'est validé ! Réservation #${id} confirmée.`, "success");
                 chargerReservations();
             } else {
                 notifier(data.message || "Impossible de valider.", "error");
@@ -451,7 +451,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     window.supprimerReservation = async (id, nom) => {
-        if (!confirm(`Êtes-vous sûr de vouloir supprimer la réservation de ${nom} (#${id}) ?`)) {
+        if (!confirm(`On supprime vraiment la réservation de ${nom} (#${id}) ? Cette action est définitive.`)) {
             return;
         }
 

@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     if (!reservationId) {
-        alert("Aucun dossier de réservation en cours. Vous allez être redirigé vers la billetterie.");
+        alert("On ne trouve pas votre dossier de réservation. Pas de panique : on vous ramène à la billetterie.");
         window.location.href = "index.html#billetterie";
         return;
     }
@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await chargerDonneesReservation();
 
     if (!reservation) {
-        alert("Dossier de réservation introuvable. Redirection vers la billetterie.");
+        alert("Dossier de réservation introuvable. On vous ramène à la billetterie.");
         window.location.href = "index.html#billetterie";
         return;
     }
@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     async function validerPaiementEtRediriger() {
         if (btnConfirmerEtRecu) {
             btnConfirmerEtRecu.disabled = true;
-            btnConfirmerEtRecu.innerHTML = `⏳ Validation de votre pass en cours...`;
+            btnConfirmerEtRecu.innerHTML = `⏳ On valide votre pass, une petite seconde...`;
         }
 
         try {

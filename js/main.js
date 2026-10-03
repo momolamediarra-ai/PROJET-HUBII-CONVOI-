@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 champQuantite.value = quantite;
                 recalculerPrix();
             } else {
-                afficherToast("Pour plus de 10 personnes, contactez directement l'organisation.", "info");
+                afficherToast("Plus de 10 personnes ? Appelez-nous directement, on va gérer votre groupe ensemble.", "info");
             }
         });
     }
@@ -194,11 +194,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (formFlowCommune) formFlowCommune.textContent = val;
                 communePointNotice.style.display = "flex";
                 if (val === "Abobo") {
-                    communePointAlert.innerHTML = `✅ <strong>Point direct Abobo :</strong> Rassemblement à la Gendarmerie d'Abobo dès 08h30.`;
+                    communePointAlert.innerHTML = `✅ <strong>C'est noté pour Abobo :</strong> rendez-vous à la Gendarmerie d'Abobo dès 08h30. On vous y attend !`;
                 } else if (val === "Songon") {
-                    communePointAlert.innerHTML = `ℹ️ <strong>Régulation Songon :</strong> Le lieu définitif sera communiqué individuellement par nos délégués selon le nombre total d'inscrits.`;
+                    communePointAlert.innerHTML = `ℹ️ <strong>Pour Songon :</strong> le point définitif dépend du nombre d'inscrits. Nos délégués vous appellent personnellement — soyez tranquille.`;
                 } else {
-                    communePointAlert.innerHTML = `⚠️ <strong>Consigne impérative :</strong> Vous devez vous rendre directement à <strong>${config.lieu}</strong> le 13 décembre à 08h30 et <u>non à la Gendarmerie d'Abobo</u>.`;
+                    communePointAlert.innerHTML = `⚠️ <strong>Important :</strong> le 13 décembre à 08h30, allez directement à <strong>${config.lieu}</strong> — et pas à la Gendarmerie d'Abobo (c'est uniquement pour les résidents d'Abobo).`;
                 }
             }
         });
@@ -241,7 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const info = POINTS_RASSEMBLEMENT[commune];
             const nomPoint = info ? info.lieu : commune;
-            afficherToast(`Commune choisie : ${commune} ➔ ${nomPoint}`, "info");
+            afficherToast(`C'est noté : départ depuis ${commune} ➔ ${nomPoint}`, "info");
 
             if (champNom) {
                 setTimeout(() => champNom.focus(), 600);
@@ -265,6 +265,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // --- 6 bis. PARTAGE WHATSAPP : on partage toujours le vrai lien du site ---
+    // Avant, le message de partage contenait une adresse locale (localhost) :
+    // personne ne pouvait ouvrir le lien. Maintenant on utilise l'adresse réelle du site.
+    const lienPartageWhatsApp = document.querySelector("a.btn-whatsapp-share[href*='api.whatsapp.com']");
+    if (lienPartageWhatsApp) {
+        const messagePartage = "Assalamu alaykum ! On monte au Petit Paradis avec CORA EVENTS le dimanche 13 décembre 2026. Prends ta place, on est ensemble : " + window.location.origin;
+        lienPartageWhatsApp.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(messagePartage)}`;
+    }
+
     // --- 7. SOUMISSION DU FORMULAIRE ---
     if (formulaire) {
         formulaire.addEventListener("submit", async (e) => {
@@ -276,25 +285,25 @@ document.addEventListener("DOMContentLoaded", () => {
             const commune = champCommune.value;
 
             if (!nom) {
-                afficherToast("Veuillez renseigner votre nom et vos prénoms.", "error");
+                afficherToast("Dites-nous votre nom et vos prénoms, s'il vous plaît.", "error");
                 champNom.focus();
                 return;
             }
 
             if (!email || !email.includes("@")) {
-                afficherToast("Veuillez renseigner une adresse email valide.", "error");
+                afficherToast("Votre adresse email ne semble pas bonne — il nous la faut pour votre pass.", "error");
                 if (champEmail) champEmail.focus();
                 return;
             }
 
             if (!telephone) {
-                afficherToast("Veuillez renseigner votre numéro de téléphone.", "error");
+                afficherToast("Il nous faut votre numéro de téléphone pour vous joindre.", "error");
                 champTelephone.focus();
                 return;
             }
 
             if (!commune) {
-                afficherToast("Veuillez sélectionner votre commune de départ.", "error");
+                afficherToast("Choisissez votre commune de départ, c'est elle qui définit votre car.", "error");
                 champCommune.focus();
                 return;
             }
@@ -306,7 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Désactiver le bouton pendant le chargement
             btnSubmit.disabled = true;
-            btnSubmit.textContent = "Création de votre réservation en cours...";
+            btnSubmit.textContent = "On prépare votre réservation, une petite seconde...";
 
             try {
                 const reponse = await fetch("/api/reservations", {
@@ -329,7 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // SEC-04 / SEC-05 : le serveur refuse les montants invalides ou un convoi complet
                 if (!reponse.ok || !resultat.success) {
-                    afficherToast(resultat.message || "Impossible d'enregistrer votre réservation.", "error");
+                    afficherToast(resultat.message || "On n'a pas pu enregistrer votre réservation. Réessayez dans un instant.", "error");
                     btnSubmit.disabled = false;
                     recalculerPrix();
                     return;
@@ -357,7 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 localStorage.setItem("reservation_id", resId);
                 localStorage.setItem("reservation_data", JSON.stringify(reservationObj));
 
-                afficherToast("Réservation enregistrée ! Redirection vers le paiement...", "success");
+                afficherToast("C'est bon, réservation enregistrée ! On passe au paiement...", "success");
 
                 setTimeout(() => {
                     window.location.href = `paiement.html?id=${resId}`;
@@ -387,7 +396,7 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.setItem("reservation_id", localId);
             localStorage.setItem("reservation_data", JSON.stringify(localObj));
 
-            afficherToast("Réservation validée ! Redirection vers le paiement...", "success");
+            afficherToast("Réservation validée ! On file vers le paiement...", "success");
 
             setTimeout(() => {
                 window.location.href = `paiement.html?id=${localId}`;
@@ -396,7 +405,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =========================================================================
-    // MOTEUR D'ANIMATIONS AVANCÉES (STYLE CODEXA DEVLABS)
+    // MOTEUR D'ANIMATIONS DOUCES — fluide et léger,
+    // avec le respect des personnes qui préfèrent moins de mouvement.
     // =========================================================================
 
     // --- A. BARRE DE PROGRESSION DE SCROLL ---
@@ -409,18 +419,25 @@ document.addEventListener("DOMContentLoaded", () => {
             document.body.prepend(progressBar);
         }
 
-        window.addEventListener("scroll", () => {
+        function mettreAJourBarre() {
             const scrollTop = window.scrollY || document.documentElement.scrollTop;
             const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
             const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) : 0;
             progressBar.style.transform = `scaleX(${Math.min(1, Math.max(0, scrollPercent))})`;
-        }, { passive: true });
+        }
+
+        window.addEventListener("scroll", mettreAJourBarre, { passive: true });
+        window.addEventListener("resize", mettreAJourBarre, { passive: true });
+        // Correction : la barre se cale dès le chargement, même si la page s'ouvre au milieu
+        mettreAJourBarre();
     }
 
     // --- B. CANVAS DE PARTICULES & CONSTELATIONS DORÉES ---
     function initParticlesCanvas() {
         const canvas = document.getElementById("particlesCanvas");
         if (!canvas) return;
+        // Accessibilité : pas de particules animées si la personne préfère moins de mouvement
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
         const ctx = canvas.getContext("2d");
         let particles = [];
@@ -545,7 +562,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- C. SPOTLIGHT ET 3D TILT SUR LES CARTES ---
     function initCardSpotlightAndTilt() {
         const cards = document.querySelectorAll(
-            ".key-point-card, .value-card, .timeline-card, .floating-tab-card, .ticket-showcase-card, .rules-content-grid, .prep-step-card, .temoignage-card, .faq-item, .contact-card-modern, .admin-kpi-card"
+            ".key-point-card, .value-card, .timeline-card, .floating-tab-card, .ticket-showcase-card, .rules-content-grid, .prep-card, .testimonial-card, .faq-item, .contact-card-modern, .kpi-card"
         );
 
         cards.forEach((card) => {
@@ -559,17 +576,31 @@ document.addEventListener("DOMContentLoaded", () => {
                 card.style.setProperty("--mouse-x", `${x}px`);
                 card.style.setProperty("--mouse-y", `${y}px`);
 
-                // 3D Tilt léger
-                if (window.innerWidth > 992) {
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
-                    const tiltX = ((y - centerY) / centerY) * -4;
-                    const tiltY = ((x - centerX) / centerX) * 4;
-                    card.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateY(-6px)`;
+                // 3D Tilt léger (grand écran uniquement)
+                if (window.innerWidth <= 992) return;
+
+                // Correction anti-bug : on ne touche pas une carte en pleine
+                // animation d'entrée (scroll-reveal), sinon elle saute.
+                if (card.hasAttribute("data-reveal") && !card.classList.contains("is-revealed")) return;
+
+                // Correction anti-bug : pendant le tilt, on utilise une transition
+                // courte dédiée. Avant, la transition d'entrée (0.8s) s'appliquait
+                // à chaque mouvement de souris — d'où l'effet "traînant".
+                if (!card.classList.contains("tilt-active")) {
+                    card.classList.add("tilt-active");
+                    card.style.transition = "transform 0.18s ease-out, box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease";
                 }
+
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const tiltX = ((y - centerY) / centerY) * -4;
+                const tiltY = ((x - centerX) / centerX) * 4;
+                card.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateY(-6px)`;
             });
 
             card.addEventListener("mouseleave", () => {
+                card.classList.remove("tilt-active");
+                card.style.transition = "";
                 card.style.transform = "";
                 card.style.setProperty("--mouse-x", `-500px`);
                 card.style.setProperty("--mouse-y", `-500px`);
@@ -587,8 +618,8 @@ document.addEventListener("DOMContentLoaded", () => {
             { sel: ".departure-cards-grid .floating-tab-card", effect: "up", delay: "0.1s" },
             { sel: ".ticket-showcase-card", effect: "scale", delay: "0.15s" },
             { sel: ".rules-section", effect: "up", delay: "0.1s" },
-            { sel: ".prep-step-card", effect: "up", delay: "0.12s" },
-            { sel: ".temoignage-card", effect: "up", delay: "0.15s" },
+            { sel: ".prep-card", effect: "up", delay: "0.12s" },
+            { sel: ".testimonial-card", effect: "up", delay: "0.15s" },
             { sel: ".faq-item", effect: "up", delay: "0.08s" },
             { sel: ".contact-card-modern", effect: "scale", delay: "0.2s" },
             { sel: ".hero-content-col", effect: "left", delay: "0.05s" },
@@ -641,9 +672,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 const diameter = Math.max(rect.width, rect.height);
                 const radius = diameter / 2;
 
+                // Correction : si l'action vient du clavier (Entrée / Espace),
+                // l'onde part du centre du bouton au lieu du coin.
+                const clickX = e.clientX > 0 ? e.clientX : rect.left + rect.width / 2;
+                const clickY = e.clientY > 0 ? e.clientY : rect.top + rect.height / 2;
+
                 circle.style.width = circle.style.height = `${diameter}px`;
-                circle.style.left = `${e.clientX - rect.left - radius}px`;
-                circle.style.top = `${e.clientY - rect.top - radius}px`;
+                circle.style.left = `${clickX - rect.left - radius}px`;
+                circle.style.top = `${clickY - rect.top - radius}px`;
                 circle.classList.add("ripple-wave");
 
                 const ripple = this.querySelector(".ripple-wave");
@@ -657,6 +693,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- F. CURSEUR LUMINEUX SUIVEUR (DESKTOP) ---
     function initCursorGlow() {
+        // Accessibilité : pas d'orbe lumineuse si la personne préfère moins de mouvement
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
         if (window.matchMedia("(hover: hover) and (min-width: 1024px)").matches) {
             const glowOrb = document.createElement("div");
             glowOrb.className = "cursor-glow-orb";
