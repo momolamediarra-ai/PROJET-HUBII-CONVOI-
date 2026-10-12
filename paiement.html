@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/jpeg" href="image/cora_event.png.jpeg">
 </head>
+
 <body>
     <!-- Barre de Progression de Scroll -->
     <div class="scroll-progress-bar" id="scrollProgressBar"></div>
@@ -31,10 +33,11 @@
     <main class="payment-wrapper" style="position: relative; overflow: hidden;">
         <!-- Orbes Lumineuses Ambiantes -->
         <div class="ambient-glow glow-gold" style="width: 450px; height: 450px; top: -80px; right: -80px;"></div>
-        <div class="ambient-glow glow-bordeaux" style="width: 500px; height: 500px; bottom: -100px; left: -100px;"></div>
+        <div class="ambient-glow glow-bordeaux" style="width: 500px; height: 500px; bottom: -100px; left: -100px;">
+        </div>
 
         <div class="payment-card-box card-spotlight">
-            
+
             <div class="payment-header-block">
                 <span class="section-pre-title">Étape 2 sur 3</span>
                 <h1>Finalisation de votre réservation</h1>
@@ -80,13 +83,14 @@
                     <span>Commune de départ</span>
                     <strong id="clientCommune">—</strong>
                 </div>
-                <div class="receipt-row" style="background: rgba(197, 154, 68, 0.08); border-radius: var(--radius-sm); padding: 8px 12px; margin: 4px -12px;">
+                <div class="receipt-row"
+                    style="background: rgba(197, 154, 68, 0.08); border-radius: var(--radius-sm); padding: 8px 12px; margin: 4px -12px;">
                     <span style="color: var(--texte-sombre); font-weight: 700;">Lieu de rassemblement</span>
                     <strong id="clientPointRassemblement" style="color: var(--or-fonce);">—</strong>
                 </div>
                 <div class="receipt-row">
                     <span>Type de formule</span>
-                    <strong id="clientTicket">Pass Convoi A/R + Boisson (Repas exclu)</strong>
+                    <strong id="clientTicket">Pass Convoi A/R (Repas exclu)</strong>
                 </div>
                 <div class="receipt-row">
                     <span>Nombre de passagers</span>
@@ -99,7 +103,8 @@
             </div>
 
             <!-- Parcours fléché officiel -->
-            <div class="route-arrow-flow" style="margin: 18px 0; background: #FFFDF9; border: 1px solid var(--bordure-claire);">
+            <div class="route-arrow-flow"
+                style="margin: 18px 0; background: #FFFDF9; border: 1px solid var(--bordure-claire);">
                 <div class="flow-step">
                     <span class="flow-label">Votre Commune</span>
                     <strong class="flow-origin-name" id="paymentFlowCommune">—</strong>
@@ -112,8 +117,10 @@
             </div>
 
             <!-- Rappel Départ -->
-            <div style="background: #FFFDF9; border: 1px solid var(--bordure-claire); border-left: 4px solid var(--or); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 13px; color: var(--texte-muet); margin-bottom: 24px; line-height: 1.5;">
-                📍 <strong>Rappel départ :</strong> Le matin du dimanche 13 décembre à 08h30, rendez-vous directement à votre point de commune ci-dessus et <u>non à la Gendarmerie d'Abobo</u> (réservée à Abobo).
+            <div
+                style="background: #FFFDF9; border: 1px solid var(--bordure-claire); border-left: 4px solid var(--or); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 13px; color: var(--texte-muet); margin-bottom: 24px; line-height: 1.5;">
+                📍 <strong>Rappel départ :</strong> Le matin du dimanche 13 décembre à 08h30, rendez-vous directement à
+                votre point de commune ci-dessus et <u>non à la Gendarmerie d'Abobo</u> (réservée à Abobo).
             </div>
 
             <!-- Boîte d'Intégration Wave -->
@@ -123,65 +130,91 @@
                         <span class="live-pulse-dot"></span> Paiement Officiel Wave
                     </div>
                     <div class="wave-logo-tag">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color: #1DC4FE;"><circle cx="12" cy="12" r="10"/><path d="M7 12c1.5-2 3.5-2 5 0 1.5 2 3.5 2 5 0" stroke="#000" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color: #1DC4FE;">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M7 12c1.5-2 3.5-2 5 0 1.5 2 3.5 2 5 0" stroke="#000" stroke-width="2"
+                                stroke-linecap="round" fill="none" />
+                        </svg>
                         <span>WAVE</span> MOBILE
                     </div>
                 </div>
 
                 <h3>Règlement Sécurisé via Wave</h3>
                 <p style="color: #D3CAD0; font-size: 14px; max-width: 480px; margin: 0 auto 18px; line-height: 1.5;">
-                    Réglez vos places directement avec <strong>Wave</strong> sur votre téléphone. Simple, rapide — c'est bouclé.
+                    Réglez vos places directement avec <strong>Wave</strong> sur votre téléphone. Simple, rapide — c'est
+                    bouclé.
                 </p>
 
                 <!-- Étape 1 : Bouton d'ouverture du lien Wave -->
                 <button type="button" id="btnWavePaiement" class="btn-primary wave-btn-checkout">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="5" width="20" height="14" rx="2" />
+                        <line x1="2" y1="10" x2="22" y2="10" />
+                    </svg>
                     <span>1. Payer avec Wave</span> (<span id="btnWaveMontant">0 FCFA</span>)
                 </button>
 
-                <div id="waveNotice" style="display: none; margin-top: 18px; font-size: 13.5px; color: var(--or-clair); background: rgba(29, 196, 254, 0.1); padding: 14px; border-radius: 12px; border: 1px dashed #1DC4FE; text-align: left; line-height: 1.5;">
+                <div id="waveNotice"
+                    style="display: none; margin-top: 18px; font-size: 13.5px; color: var(--or-clair); background: rgba(29, 196, 254, 0.1); padding: 14px; border-radius: 12px; border: 1px dashed #1DC4FE; text-align: left; line-height: 1.5;">
                     <div style="display: flex; align-items: flex-start; gap: 10px;">
                         <span style="font-size: 18px;">🌊</span>
                         <div>
                             <strong style="color: #1DC4FE;">Paiement Wave en cours :</strong><br>
-                            Complétez votre règlement sur Wave, puis appuyez sur le bouton vert : votre reçu officiel avec son QR Code s'affiche aussitôt.
+                            Complétez votre règlement sur Wave, puis appuyez sur le bouton vert : votre reçu officiel
+                            avec son QR Code s'affiche aussitôt.
                         </div>
                     </div>
                 </div>
 
                 <!-- Étape 2 : Confirmation après paiement & téléchargement immédiat du reçu -->
-                <div id="wavePostPaymentBox" style="margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(197, 154, 68, 0.25);">
+                <div id="wavePostPaymentBox"
+                    style="margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(197, 154, 68, 0.25);">
                     <p style="font-size: 13.5px; color: #E5E0D8; margin-bottom: 12px;">
                         C'est bon, vous avez payé sur Wave ?
                     </p>
-                    <button type="button" id="btnConfirmerEtRecu" class="btn-primary" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%); color: #FFF; font-weight: 800; font-size: 15px; box-shadow: 0 8px 20px rgba(34, 197, 94, 0.35);">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <button type="button" id="btnConfirmerEtRecu" class="btn-primary"
+                        style="width: 100%; justify-content: center; background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%); color: #FFF; font-weight: 800; font-size: 15px; box-shadow: 0 8px 20px rgba(34, 197, 94, 0.35);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
                         <span>J'ai payé sur Wave → Télécharger mon Reçu & Pass</span>
                     </button>
                 </div>
 
                 <!-- Si déjà payé -->
-                <div id="dejaPayeBox" style="display: none; margin-top: 16px; background: rgba(34, 197, 94, 0.15); border: 1px solid #22C55E; padding: 16px; border-radius: 12px; text-align: center;">
+                <div id="dejaPayeBox"
+                    style="display: none; margin-top: 16px; background: rgba(34, 197, 94, 0.15); border: 1px solid #22C55E; padding: 16px; border-radius: 12px; text-align: center;">
                     <div style="color: #4ADE80; font-weight: 800; font-size: 16px; margin-bottom: 8px;">
                         ✓ Réservation Confirmée & Payée !
                     </div>
                     <p style="font-size: 13px; color: #FFF; margin-bottom: 14px;">
-                        Votre paiement est bien enregistré. Votre pass d'embarquement avec son QR Code vous attend, prêt à télécharger.
+                        Votre paiement est bien enregistré. Votre pass d'embarquement avec son QR Code vous attend, prêt
+                        à télécharger.
                     </p>
-                    <a href="recu.html" id="btnVoirRecuDirect" class="btn-primary" style="display: inline-flex; justify-content: center; width: 100%; background: var(--or);">
+                    <a href="recu.html" id="btnVoirRecuDirect" class="btn-primary"
+                        style="display: inline-flex; justify-content: center; width: 100%; background: var(--or);">
                         🎫 Télécharger mon Pass d'embarquement
                     </a>
                 </div>
 
-                <div style="font-size: 12px; color: var(--texte-clair-muet); margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <div
+                    style="font-size: 12px; color: var(--texte-clair-muet); margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
                     Paiement 100% sécurisé via Wave • Reçu & Pass avec QR Code instantané
                 </div>
             </div>
 
             <!-- Assistance directe -->
             <div style="margin-top: 24px; text-align: center; font-size: 13px; color: var(--texte-muet);">
-                Un souci pour payer ? Appelez vite nos délégués au <a href="tel:0503526191" style="font-weight: 700; color: var(--or-fonce);">05 03 52 61 91</a> ou sur <a href="https://wa.me/2250105245225" target="_blank" style="font-weight: 700; color: #25D366;">WhatsApp</a>.
+                Un souci pour payer ? Appelez vite nos délégués au <a href="tel:0503526191"
+                    style="font-weight: 700; color: var(--or-fonce);">05 03 52 61 91</a> ou sur <a
+                    href="https://wa.me/2250105245225" target="_blank"
+                    style="font-weight: 700; color: #25D366;">WhatsApp</a>.
             </div>
 
         </div>
@@ -189,7 +222,8 @@
 
     <!-- Footer -->
     <footer class="site-footer" style="padding: 24px 20px;">
-        <div style="max-width: 1240px; margin: 0 auto; text-align: center; font-size: 13px; color: var(--texte-clair-muet);">
+        <div
+            style="max-width: 1240px; margin: 0 auto; text-align: center; font-size: 13px; color: var(--texte-clair-muet);">
             <div style="margin-bottom: 8px; display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
                 <a href="index.html" style="color: var(--or-clair);">Accueil</a>
                 <span>•</span>
@@ -203,4 +237,5 @@
 
     <script src="js/paiement.js"></script>
 </body>
+
 </html>

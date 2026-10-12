@@ -5,7 +5,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
     // --- 1. CONFIGURATION DU PRIX ET DES ÉLÉMENTS ---
-    const PRIX_UNITAIRE = 3000;
+    const PRIX_UNITAIRE = 3030;
     let quantite = 1;
 
     const champNom = document.getElementById("nom");

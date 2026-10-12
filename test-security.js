@@ -45,8 +45,8 @@ async function runTests() {
             point_rassemblement: "Université UFHB",
             ticket: "Pass Convoi Petit Paradis",
             quantite: 1,
-            prix_unitaire: 3000,
-            total: 3000
+            prix_unitaire: 3030,
+            total: 3030
         };
 
         const res1 = await fetch(`${BASE_URL}/api/reservations`, {
@@ -161,11 +161,11 @@ async function runTests() {
         const data = await res.json();
 
         assert(res.status === 200 && data.success === true, "Réservation créée malgré un montant falsifié (1 FCFA) envoyé par le client");
-        assert(data.total === 6000 && data.prix_unitaire === 3000, `Montant recalculé côté serveur : ${data.total} FCFA (attendu 6 000 FCFA)`);
+        assert(data.total === 6060 && data.prix_unitaire === 3030, `Montant recalculé côté serveur : ${data.total} FCFA (attendu 6 060 FCFA)`);
 
         const verifRes = await fetch(`${BASE_URL}/api/reservations/${data.reservation_id}`);
         const verifData = await verifRes.json();
-        assert(verifData.reservation && Number(verifData.reservation.total) === 6000, "Montant stocké en base conforme au calcul officiel (2 × 3 000 FCFA)");
+        assert(verifData.reservation && Number(verifData.reservation.total) === 6060, "Montant stocké en base conforme au calcul officiel (2 × 3 030 FCFA)");
     } catch (e) {
         assert(false, `Erreur test SEC-04 : ${e.message}`);
     }

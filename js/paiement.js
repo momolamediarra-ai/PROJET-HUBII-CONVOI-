@@ -26,9 +26,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     const btnVoirRecuDirect = document.getElementById("btnVoirRecuDirect");
 
     // =========================================================================
-    // LIEN OFFICIEL DE PAIEMENT WAVE (Laissé vide — à renseigner ultérieurement)
+    // LIEN OFFICIEL DE PAIEMENT WAVE
     // =========================================================================
-    const LIEN_PAIEMENT_WAVE = "";
+    const LIEN_PAIEMENT_WAVE = "https://pay.wave.com/m/M_ci_h9hZMaHf2uuM/c/ci/?amount=3030";
+    const LIEN_PAIEMENT_WAVE_BASE = "https://pay.wave.com/m/M_ci_h9hZMaHf2uuM/c/ci/";
+
+    function obtenirLienPaiementWave() {
+        if (reservation && reservation.total && Number(reservation.total) > 0) {
+            return `${LIEN_PAIEMENT_WAVE_BASE}?amount=${encodeURIComponent(reservation.total)}`;
+        }
+        return LIEN_PAIEMENT_WAVE;
+    }
 
     const POINTS_RASSEMBLEMENT_MAP = {
         "Anyama": "Gare d'Anyama",
@@ -174,12 +182,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 wavePostPaymentBox.style.display = "block";
             }
 
-            // Si le lien Wave est configuré, on l'ouvre
-            if (LIEN_PAIEMENT_WAVE && LIEN_PAIEMENT_WAVE.trim() !== "" && LIEN_PAIEMENT_WAVE !== "#") {
-                window.open(LIEN_PAIEMENT_WAVE, "_blank");
-            } else {
-                console.info("Lien Wave non configuré (en attente de saisie).");
-            }
+            // Ouverture du lien de paiement officiel Wave
+            const urlWave = obtenirLienPaiementWave();
+            window.open(urlWave, "_blank");
         });
     }
 

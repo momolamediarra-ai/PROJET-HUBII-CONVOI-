@@ -104,7 +104,7 @@ function getSessionSecret() {
 
 function getPrixUnitaire() {
     // Prix officiel par passager (FCFA). Le serveur reste la seule source de vérité (SEC-04).
-    return Number(process.env.PRIX_UNITAIRE) || 3000;
+    return Number(process.env.PRIX_UNITAIRE) || 3030;
 }
 
 function getCapaciteTotale() {
