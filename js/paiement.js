@@ -19,11 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const clientTotal = document.getElementById("clientTotal");
     const btnWavePaiement = document.getElementById("btnWavePaiement");
     const btnWaveMontant = document.getElementById("btnWaveMontant");
-    const waveNotice = document.getElementById("waveNotice");
-    const wavePostPaymentBox = document.getElementById("wavePostPaymentBox");
-    const btnConfirmerEtRecu = document.getElementById("btnConfirmerEtRecu");
-    const dejaPayeBox = document.getElementById("dejaPayeBox");
-    const btnVoirRecuDirect = document.getElementById("btnVoirRecuDirect");
+    const waveRedirectNotice = document.getElementById("waveRedirectNotice");
 
     // =========================================================================
     // LIEN OFFICIEL DE PAIEMENT WAVE
@@ -119,95 +115,59 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (clientTotal) clientTotal.textContent = totalFormate;
     if (btnWaveMontant) btnWaveMontant.textContent = totalFormate;
 
-    // Fonction pour afficher l'état Payé
-    function activerEtatPaye() {
-        if (dejaPayeBox) dejaPayeBox.style.display = "block";
-        if (btnWavePaiement) btnWavePaiement.style.display = "none";
-        if (wavePostPaymentBox) wavePostPaymentBox.style.display = "none";
-        if (waveNotice) waveNotice.style.display = "none";
-        if (btnVoirRecuDirect) {
-            btnVoirRecuDirect.href = `recu.html?id=${reservation.id}`;
-        }
-    }
-
-    // Si la réservation est déjà PAYÉ
+    // Si la réservation est déjà PAYÉ → rediriger directement
     if (reservation.statut === "PAYÉ") {
-        activerEtatPaye();
+        window.location.href = `recu.html?id=${reservation.id}&paid=1`;
+        return;
     }
 
     // =========================================================================
-    // VALIDATION DU PAIEMENT CLIENT & TÉLÉCHARGEMENT DU REÇU
+    // FLUX SIMPLIFIÉ : CLIC WAVE → OUVRE WAVE → REDIRIGE VERS TICKET
     // =========================================================================
-    async function validerPaiementEtRediriger() {
-        if (btnWavePaiement) {
-            btnWavePaiement.disabled = true;
-            btnWavePaiement.innerHTML = `⏳ Ouverture de Wave & Redirection vers votre ticket...`;
-        }
-        if (btnConfirmerEtRecu) {
-            btnConfirmerEtRecu.disabled = true;
-            btnConfirmerEtRecu.innerHTML = `⏳ On valide votre pass, une petite seconde...`;
-        }
-
-        try {
-            const res = await fetch(`/api/reservations/${reservation.id}/confirmer-paiement`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" }
-            });
-            const data = await res.json();
-            if (data.success && data.reservation) {
-                reservation = data.reservation;
-            }
-        } catch (e) {
-            console.warn("Validation hors ligne locale :", e);
-        }
-
-        // Mettre à jour le cache local
+    function redirectVersTicket() {
+        // Marque le paiement en local
         reservation.statut = "PAYÉ";
         localStorage.setItem("reservation_data", JSON.stringify(reservation));
         localStorage.setItem("reservation_id", reservation.id);
 
-        // Redirection directe vers la page de reçu officiel avec paid=1
+        // Appel serveur silencieux (ne bloque pas la redirection)
+        fetch(`/api/reservations/${reservation.id}/confirmer-paiement`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+        }).catch(() => {});
+
+        // Redirection directe vers le ticket officiel
         window.location.href = `recu.html?id=${reservation.id}&paid=1`;
     }
 
-    // Si le paramètre URL indique un retour de paiement
+    // Si l'URL contient ?paid=1 (retour direct)
     if (isPaidParam) {
-        await validerPaiementEtRediriger();
+        redirectVersTicket();
         return;
     }
 
     // Clic sur "Payer avec Wave"
     if (btnWavePaiement) {
         btnWavePaiement.addEventListener("click", () => {
-            if (waveNotice) {
-                waveNotice.style.display = "block";
-            }
-            if (wavePostPaymentBox) {
-                wavePostPaymentBox.style.display = "block";
-            }
+            // Afficher le spinner de redirection
+            if (waveRedirectNotice) waveRedirectNotice.style.display = "block";
 
-            // Ouverture du lien de paiement officiel Wave dans un nouvel onglet / app Wave
+            // Désactiver le bouton pour éviter double-clic
+            btnWavePaiement.disabled = true;
+            btnWavePaiement.style.opacity = "0.6";
+
+            // Ouvrir Wave sur le téléphone / navigateur
             const urlWave = obtenirLienPaiementWave();
             window.open(urlWave, "_blank");
 
-            // Indication visuelle et redirection automatique de la page parente vers le ticket
-            btnWavePaiement.style.background = "linear-gradient(135deg, #16A34A 0%, #15803D 100%)";
-            btnWavePaiement.innerHTML = `<span>🌊 Paiement Wave ouvert — Redirection vers votre ticket...</span>`;
-
+            // Redirection automatique vers le ticket après 2 secondes
             setTimeout(() => {
-                validerPaiementEtRediriger();
-            }, 1800);
+                redirectVersTicket();
+            }, 2000);
         });
     }
 
-    // Clic manuel de secours : "J'ai payé sur Wave -> Télécharger mon Reçu & Pass"
-    if (btnConfirmerEtRecu) {
-        btnConfirmerEtRecu.addEventListener("click", () => {
-            validerPaiementEtRediriger();
-        });
-    }
-
-    // Polling discret : vérifie si le statut devient PAYÉ
+    // Polling discret : si le serveur confirme le paiement, rediriger vers le ticket
     const pollInterval = setInterval(async () => {
         if (reservation && reservation.statut === "PAYÉ") {
             clearInterval(pollInterval);
@@ -219,10 +179,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             const resultat = await reponse.json();
 
             if (reponse.ok && resultat.success && resultat.reservation && resultat.reservation.statut === "PAYÉ") {
-                reservation = resultat.reservation;
-                localStorage.setItem("reservation_data", JSON.stringify(reservation));
-                activerEtatPaye();
                 clearInterval(pollInterval);
+                window.location.href = `recu.html?id=${reservationId}&paid=1`;
             }
         } catch (e) {
             // mode hors ligne

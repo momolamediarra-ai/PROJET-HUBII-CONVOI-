@@ -7,6 +7,15 @@
     <title>Paiement Sécurisé | Convoi Petit Paradis — CORA EVENTS</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/jpeg" href="image/cora_event.png.jpeg">
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 
 <body>
@@ -161,58 +170,24 @@
                     ⚠️ <strong>Note :</strong> Aucun remboursement n'est possible après validation du paiement.
                 </div>
 
-                <!-- Étape 1 : Bouton d'ouverture du lien Wave -->
+                <!-- Bouton unique : Payer avec Wave → Redirection automatique sur le ticket -->
                 <button type="button" id="btnWavePaiement" class="btn-primary wave-btn-checkout">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
                         stroke-linecap="round" stroke-linejoin="round">
                         <rect x="2" y="5" width="20" height="14" rx="2" />
                         <line x1="2" y1="10" x2="22" y2="10" />
                     </svg>
-                    <span>1. Payer avec Wave</span> (<span id="btnWaveMontant">0 FCFA</span>)
+                    <span>Payer avec Wave</span> — <span id="btnWaveMontant">0 FCFA</span>
                 </button>
 
-                <div id="waveNotice"
-                    style="display: none; margin-top: 18px; font-size: 13.5px; color: var(--or-clair); background: rgba(29, 196, 254, 0.1); padding: 14px; border-radius: 12px; border: 1px dashed #1DC4FE; text-align: left; line-height: 1.5;">
-                    <div style="display: flex; align-items: flex-start; gap: 10px;">
-                        <span style="font-size: 18px;">🌊</span>
-                        <div>
-                            <strong style="color: #1DC4FE;">Paiement Wave en cours :</strong><br>
-                            Complétez votre règlement sur Wave, puis appuyez sur le bouton vert : votre reçu officiel
-                            avec son QR Code s'affiche aussitôt.
-                        </div>
+                <!-- Message de chargement affiché pendant la redirection -->
+                <div id="waveRedirectNotice" style="display: none; margin-top: 18px; text-align: center; font-size: 14px; color: #4ADE80; animation: fadeIn 0.4s ease;">
+                    <div style="font-size: 28px; margin-bottom: 8px;">🌊</div>
+                    <strong>Wave ouvert sur votre téléphone...</strong><br>
+                    <span style="color: #E5E0D8; font-size: 13px;">Vous serez redirigé vers votre ticket dans un instant.</span>
+                    <div style="margin-top: 12px;">
+                        <div style="display: inline-block; width: 28px; height: 28px; border: 3px solid #1DC4FE; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
                     </div>
-                </div>
-
-                <!-- Étape 2 : Confirmation après paiement & téléchargement immédiat du reçu -->
-                <div id="wavePostPaymentBox"
-                    style="margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(197, 154, 68, 0.25);">
-                    <p style="font-size: 13.5px; color: #E5E0D8; margin-bottom: 12px;">
-                        C'est bon, vous avez payé sur Wave ?
-                    </p>
-                    <button type="button" id="btnConfirmerEtRecu" class="btn-primary"
-                        style="width: 100%; justify-content: center; background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%); color: #FFF; font-weight: 800; font-size: 15px; box-shadow: 0 8px 20px rgba(34, 197, 94, 0.35);">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        <span>J'ai payé sur Wave → Télécharger mon Reçu & Pass</span>
-                    </button>
-                </div>
-
-                <!-- Si déjà payé -->
-                <div id="dejaPayeBox"
-                    style="display: none; margin-top: 16px; background: rgba(34, 197, 94, 0.15); border: 1px solid #22C55E; padding: 16px; border-radius: 12px; text-align: center;">
-                    <div style="color: #4ADE80; font-weight: 800; font-size: 16px; margin-bottom: 8px;">
-                        ✓ Réservation Confirmée & Payée !
-                    </div>
-                    <p style="font-size: 13px; color: #FFF; margin-bottom: 14px;">
-                        Votre paiement est bien enregistré. Votre pass d'embarquement avec son QR Code vous attend, prêt
-                        à télécharger.
-                    </p>
-                    <a href="recu.html" id="btnVoirRecuDirect" class="btn-primary"
-                        style="display: inline-flex; justify-content: center; width: 100%; background: var(--or);">
-                        🎫 Télécharger mon Pass d'embarquement
-                    </a>
                 </div>
 
                 <div
@@ -221,7 +196,7 @@
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                         <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
-                    Paiement 100% sécurisé via Wave • Reçu & Pass avec QR Code instantané
+                    Paiement 100% sécurisé via Wave • Ticket avec QR Code certifié
                 </div>
             </div>
 
