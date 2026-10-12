@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de QR Code Officiel | CORA EVENTS</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/jpeg" href="image/cora_event.png.jpeg">
+    <style>
+        .qr-wrapper {
+            max-width: 680px;
+            margin: 40px auto;
+            padding: 0 16px;
+        }
+        .qr-card {
+            background: #FFFDF9;
+            border: 1.5px solid var(--bordure-claire);
+            border-radius: var(--radius-lg);
+            padding: 32px 28px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+        .qr-render-box {
+            background: #FFFFFF;
+            border: 2px solid var(--or);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            display: inline-block;
+            margin: 20px auto;
+            box-shadow: 0 8px 24px rgba(197, 154, 68, 0.15);
+        }
+        .qr-render-box canvas {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+        }
+        .qr-preset-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 16px 0 20px;
+        }
+        .qr-preset-btn {
+            background: var(--creme);
+            border: 1px solid #DCD3C5;
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--texte-sombre);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .qr-preset-btn:hover, .qr-preset-btn.active {
+            background: var(--or-clair);
+            border-color: var(--or);
+            color: var(--noir);
+        }
+        .qr-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+        @media print {
+            .site-header, .site-footer, .qr-actions, .qr-preset-btns, .form-field {
+                display: none !important;
+            }
+            .qr-card {
+                box-shadow: none;
+                border: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="site-header">
+        <div class="navbar">
+            <a href="index.html" class="brand-link">
+                <img src="image/cora_event.png.jpeg" alt="Logo Cora Events" class="brand-logo-img">
+                <div class="brand-text">
+                    <span class="brand-name">Cora <span>Events</span></span>
+                    <span class="brand-sub">QR Code Officiel</span>
+                </div>
+            </a>
+
+            <a href="index.html" class="btn-secondary" style="padding: 9px 18px; font-size: 13px;">
+                ← Retour au site
+            </a>
+        </div>
+    </header>
+
+    <main class="qr-wrapper">
+        <div class="qr-card">
+            <span class="section-pre-title">Communication & Billetterie</span>
+            <h1 style="font-size: 26px; font-weight: 800; color: var(--bordeaux-sombre); margin-bottom: 8px;">
+                QR Code du Convoi Petit Paradis
+            </h1>
+            <p style="color: var(--texte-muet); font-size: 14px; max-width: 500px; margin: 0 auto 20px;">
+                Scannez ce QR Code avec l'appareil photo de n'importe quel smartphone pour accéder directement à la page officielle.
+            </p>
+
+            <!-- Choix des raccourcis -->
+            <div class="qr-preset-btns">
+                <button type="button" class="qr-preset-btn active" id="btnPresetSite">
+                    🌐 Lien du Site Web
+                </button>
+                <button type="button" class="qr-preset-btn" id="btnPresetWave">
+                    🌊 Lien de Paiement Wave (3 030 F)
+                </button>
+                <button type="button" class="qr-preset-btn" id="btnPresetWhatsApp">
+                    💬 Lien WhatsApp Délégués
+                </button>
+            </div>
+
+            <!-- Champ de saisie d'URL -->
+            <div class="form-field" style="max-width: 520px; margin: 0 auto 16px; text-align: left;">
+                <label for="qrUrlInput" style="font-size: 13px; font-weight: 700; color: var(--texte-sombre); margin-bottom: 6px; display: block;">
+                    Lien encodé dans le QR Code :
+                </label>
+                <input type="url" id="qrUrlInput" class="form-input" style="padding-left: 14px; font-size: 14px;"
+                    value="" placeholder="https://votre-site.com">
+            </div>
+
+            <!-- Zone de rendu du QR Code -->
+            <div class="qr-render-box">
+                <div id="qrcodeTarget"></div>
+                <div style="margin-top: 12px; font-size: 13px; font-weight: 800; color: var(--or-fonce); letter-spacing: 0.5px;">
+                    CORA EVENTS • CONVOI 2026
+                </div>
+            </div>
+
+            <p style="font-size: 13px; color: var(--texte-muet); margin-top: 8px;" id="qrUrlLabel">
+                <!-- URL affichée -->
+            </p>
+
+            <!-- Actions de téléchargement & impression -->
+            <div class="qr-actions">
+                <button type="button" id="btnTelecharger" class="btn-primary" style="padding: 12px 24px; font-size: 14px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <span>Télécharger l'Image (PNG HD)</span>
+                </button>
+                <button type="button" onclick="window.print()" class="btn-secondary" style="padding: 12px 20px; font-size: 14px;">
+                    🖨️ Imprimer l'Affiche
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer" style="padding: 24px 20px; margin-top: 40px;">
+        <div style="max-width: 1240px; margin: 0 auto; text-align: center; font-size: 13px; color: var(--texte-clair-muet);">
+            © 2026 CORA_EVENT — Tous droits réservés. Plateforme de billetterie officielle.
+        </div>
+    </footer>
+
+    <script src="js/qrcode.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const inputUrl = document.getElementById("qrUrlInput");
+            const labelUrl = document.getElementById("qrUrlLabel");
+            const target = document.getElementById("qrcodeTarget");
+            const btnTelecharger = document.getElementById("btnTelecharger");
+            const btnPresetSite = document.getElementById("btnPresetSite");
+            const btnPresetWave = document.getElementById("btnPresetWave");
+            const btnPresetWhatsApp = document.getElementById("btnPresetWhatsApp");
+
+            // URL par défaut : l'URL actuelle du site ou fallback
+            const defaultSiteUrl = (window.location.origin && window.location.origin !== "null" && !window.location.origin.startsWith("file:"))
+                ? window.location.origin + window.location.pathname.replace("qrcode.html", "index.html")
+                : "https://coraevents.ci";
+
+            const waveUrl = "https://pay.wave.com/m/M_ci_h9hZMaHf2uuM/c/ci/?amount=3030";
+            const whatsappUrl = "https://wa.me/2250105245225?text=Bonjour%20CORA%20EVENTS,%20je%20souhaite%20des%20informations%20sur%20le%20convoi.";
+
+            inputUrl.value = defaultSiteUrl;
+
+            let qr = null;
+
+            function genererQRCode(url) {
+                target.innerHTML = "";
+                labelUrl.textContent = url;
+                qr = new QRCode(target, {
+                    text: url,
+                    width: 240,
+                    height: 240,
+                    colorDark: "#1A1A1A",
+                    colorLight: "#FFFFFF",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+
+            genererQRCode(inputUrl.value);
+
+            inputUrl.addEventListener("input", (e) => {
+                const url = e.target.value.trim();
+                if (url) genererQRCode(url);
+            });
+
+            btnPresetSite.addEventListener("click", () => {
+                inputUrl.value = defaultSiteUrl;
+                document.querySelectorAll(".qr-preset-btn").forEach(b => b.classList.remove("active"));
+                btnPresetSite.classList.add("active");
+                genererQRCode(defaultSiteUrl);
+            });
+
+            btnPresetWave.addEventListener("click", () => {
+                inputUrl.value = waveUrl;
+                document.querySelectorAll(".qr-preset-btn").forEach(b => b.classList.remove("active"));
+                btnPresetWave.classList.add("active");
+                genererQRCode(waveUrl);
+            });
+
+            btnPresetWhatsApp.addEventListener("click", () => {
+                inputUrl.value = whatsappUrl;
+                document.querySelectorAll(".qr-preset-btn").forEach(b => b.classList.remove("active"));
+                btnPresetWhatsApp.classList.add("active");
+                genererQRCode(whatsappUrl);
+            });
+
+            btnTelecharger.addEventListener("click", () => {
+                const canvas = target.querySelector("canvas");
+                if (!canvas) {
+                    alert("QR Code non prêt.");
+                    return;
+                }
+
+                // Création d'un canvas HD avec marge et logo/titre
+                const finalCanvas = document.createElement("canvas");
+                const padding = 30;
+                finalCanvas.width = canvas.width + padding * 2;
+                finalCanvas.height = canvas.height + padding * 2 + 50;
+                const ctx = finalCanvas.getContext("2d");
+
+                // Fond blanc
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+                // Bordure dorée
+                ctx.strokeStyle = "#C59A44";
+                ctx.lineWidth = 4;
+                ctx.strokeRect(10, 10, finalCanvas.width - 20, finalCanvas.height - 20);
+
+                // Dessin du QR Code
+                ctx.drawImage(canvas, padding, padding);
+
+                // Texte sous le QR
+                ctx.fillStyle = "#5A0F24";
+                ctx.font = "bold 16px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("CORA EVENTS • CONVOI 2026", finalCanvas.width / 2, canvas.height + padding + 35);
+
+                const link = document.createElement("a");
+                link.download = "QR_CODE_CORA_EVENTS.png";
+                link.href = finalCanvas.toDataURL("image/png");
+                link.click();
+            });
+        });
+    </script>
+</body>
+</html>

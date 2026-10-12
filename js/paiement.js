@@ -139,6 +139,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     // VALIDATION DU PAIEMENT CLIENT & TÉLÉCHARGEMENT DU REÇU
     // =========================================================================
     async function validerPaiementEtRediriger() {
+        if (btnWavePaiement) {
+            btnWavePaiement.disabled = true;
+            btnWavePaiement.innerHTML = `⏳ Ouverture de Wave & Redirection vers votre ticket...`;
+        }
         if (btnConfirmerEtRecu) {
             btnConfirmerEtRecu.disabled = true;
             btnConfirmerEtRecu.innerHTML = `⏳ On valide votre pass, une petite seconde...`;
@@ -162,7 +166,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         localStorage.setItem("reservation_data", JSON.stringify(reservation));
         localStorage.setItem("reservation_id", reservation.id);
 
-        // Redirection directe vers la page de reçu avec paid=1
+        // Redirection directe vers la page de reçu officiel avec paid=1
         window.location.href = `recu.html?id=${reservation.id}&paid=1`;
     }
 
@@ -182,13 +186,21 @@ document.addEventListener("DOMContentLoaded", async () => {
                 wavePostPaymentBox.style.display = "block";
             }
 
-            // Ouverture du lien de paiement officiel Wave
+            // Ouverture du lien de paiement officiel Wave dans un nouvel onglet / app Wave
             const urlWave = obtenirLienPaiementWave();
             window.open(urlWave, "_blank");
+
+            // Indication visuelle et redirection automatique de la page parente vers le ticket
+            btnWavePaiement.style.background = "linear-gradient(135deg, #16A34A 0%, #15803D 100%)";
+            btnWavePaiement.innerHTML = `<span>🌊 Paiement Wave ouvert — Redirection vers votre ticket...</span>`;
+
+            setTimeout(() => {
+                validerPaiementEtRediriger();
+            }, 1800);
         });
     }
 
-    // Clic sur "J'ai payé sur Wave -> Télécharger mon Reçu & Pass"
+    // Clic manuel de secours : "J'ai payé sur Wave -> Télécharger mon Reçu & Pass"
     if (btnConfirmerEtRecu) {
         btnConfirmerEtRecu.addEventListener("click", () => {
             validerPaiementEtRediriger();

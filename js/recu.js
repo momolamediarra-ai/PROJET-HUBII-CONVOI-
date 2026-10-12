@@ -1,5 +1,6 @@
 /**
  * AFFICHAGE DU PASS D'EMBARQUEMENT OFFICIEL AVEC QR CODE — CORA EVENTS
+ * Contrôle strict d'accès : le billet est verrouillé tant que non payé.
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -8,9 +9,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const isPaidParam = params.get("paid") === "1" || params.get("status") === "success";
 
     const loadingEl = document.getElementById("recuLoading");
-    const containerEl = document.getElementById("recuContainer");
+    const verrouilleCard = document.getElementById("recuVerrouilleCard");
+    const recuCard = document.getElementById("recuCard");
 
+    // Éléments du Billet officiel
     const elDossier = document.getElementById("recuDossier");
+    const elNumTicket = document.getElementById("recuNumTicket");
     const elNom = document.getElementById("recuNom");
     const elEmail = document.getElementById("recuEmail");
     const elTelephone = document.getElementById("recuTelephone");
@@ -23,6 +27,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     const elQRRef = document.getElementById("recuQRRef");
     const elQRCode = document.getElementById("recuQRCode");
     const btnShareWhatsApp = document.getElementById("btnShareWhatsApp");
+
+    // Éléments de l'écran verrouillé
+    const lockReservationId = document.getElementById("lockReservationId");
+    const lockNomClient = document.getElementById("lockNomClient");
+    const lockMontant = document.getElementById("lockMontant");
+    const btnLockPayerWave = document.getElementById("btnLockPayerWave");
+    const btnLockDebloquer = document.getElementById("btnLockDebloquer");
 
     const POINTS_RASSEMBLEMENT_MAP = {
         "Anyama": "Gare d'Anyama",
@@ -42,8 +53,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!id) {
         if (loadingEl) {
             loadingEl.innerHTML = `
-                <div style="padding: 20px;">
-                    <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">Oups, on ne trouve pas votre numéro de réservation.</p>
+                <div style="padding: 10px;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">⚠️</div>
+                    <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">Aucun numéro de réservation trouvé.</p>
                     <a href="index.html#billetterie" class="btn-primary" style="display: inline-flex; font-size: 14px;">Retourner à la billetterie</a>
                 </div>
             `;
@@ -54,7 +66,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
         let res = null;
 
-        // Si le paramètre paid=1 est présent, confirmer automatiquement le paiement
+        // 1. Si retour avec paid=1, on confirme automatiquement côté serveur
         if (isPaidParam) {
             try {
                 const confRes = await fetch(`/api/reservations/${id}/confirmer-paiement`, {
@@ -66,39 +78,43 @@ document.addEventListener("DOMContentLoaded", async () => {
                     res = confData.reservation;
                 }
             } catch (err) {
-                console.warn("Auto-validation réseau :", err);
+                console.warn("Confirmation réseau auto :", err);
             }
         }
 
+        // 2. Recherche sur l'API serveur
         if (!res) {
             try {
                 const response = await fetch(`/api/reservations/${id}`);
                 const result = await response.json();
-                if (response.ok && result.success) {
+                if (response.ok && result.success && result.reservation) {
                     res = result.reservation;
                 }
             } catch (e) {
-                console.warn("Mode local pour le pass :", e);
+                console.warn("Mode local pass :", e);
             }
         }
 
-        // Récupération locale
+        // 3. Fallback cache local si serveur non démarré
         if (!res) {
             try {
                 const dataLocale = localStorage.getItem("reservation_data");
                 if (dataLocale) {
-                    res = JSON.parse(dataLocale);
+                    const parsed = JSON.parse(dataLocale);
+                    if (String(parsed.id) === String(id) || !id) {
+                        res = parsed;
+                    }
                 }
             } catch (e) {
-                console.error("Erreur cache pass :", e);
+                console.error("Erreur cache local :", e);
             }
         }
 
         if (!res) {
             if (loadingEl) {
                 loadingEl.innerHTML = `
-                    <div style="padding: 20px;">
-                        <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">On ne trouve pas le dossier #${id}. Vérifiez le lien, s'il vous plaît.</p>
+                    <div style="padding: 10px;">
+                        <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">Dossier de réservation #${id} introuvable.</p>
                         <a href="index.html#billetterie" class="btn-primary" style="display: inline-flex; font-size: 14px;">Retourner à la billetterie</a>
                     </div>
                 `;
@@ -106,34 +122,34 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        // Si la réservation n'est pas encore payée
-        if (res.statut !== "PAYÉ" && !isPaidParam) {
-            if (loadingEl) {
-                loadingEl.innerHTML = `
-                    <div style="padding: 24px; text-align: center;">
-                        <div style="font-size: 32px; margin-bottom: 10px;">⏳</div>
-                        <h3 style="color: #b91c1c; font-weight: 800; font-size: 18px; margin-bottom: 8px;">Paiement en attente de validation</h3>
-                        <p style="margin-bottom: 18px; font-size: 14px; color: var(--texte-muet); line-height: 1.5;">
-                            Votre réservation <strong>#PP-${String(res.id).padStart(4, "0")}</strong> est bien enregistrée, ne bougez pas. Si vous venez de régler sur <strong>Wave</strong>, débloquez votre reçu tout de suite avec le bouton ci-dessous :
-                        </p>
-                        <div style="display: flex; flex-direction: column; gap: 10px; max-width: 360px; margin: 0 auto;">
-                            <button type="button" id="btnDebloquerRecu" class="btn-primary" style="justify-content: center; background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);">
-                                ✓ J'ai payé sur Wave — Débloquer mon reçu
-                            </button>
-                            <a href="paiement.html?id=${res.id}" class="btn-secondary" style="justify-content: center;">
-                                Payer sur Wave maintenant →
-                            </a>
-                        </div>
-                    </div>
-                `;
+        const pointLieu = res.point_rassemblement || POINTS_RASSEMBLEMENT_MAP[res.commune] || "Point de sa commune";
+        const codeDossier = `#PP-${String(res.id).padStart(4, "0")}`;
+        const totalFormate = `${Number(res.total || 3030).toLocaleString("fr-FR")} FCFA`;
 
-                const btnDebloquer = document.getElementById("btnDebloquerRecu");
-                if (btnDebloquer) {
-                    btnDebloquer.addEventListener("click", async () => {
-                        btnDebloquer.disabled = true;
-                        btnDebloquer.textContent = "On débloque votre reçu, une seconde...";
+        // =====================================================================
+        // CONTRÔLE DE SÉCURITÉ : TANT QUE LE PAIEMENT N'EST PAS FAIT
+        // LE BILLET OFFICIEL EST COMPLÈTEMENT VERROUILLÉ
+        // =====================================================================
+        const estPaye = res.statut === "PAYÉ" || isPaidParam;
+
+        if (!estPaye) {
+            if (loadingEl) loadingEl.style.display = "none";
+            if (recuCard) recuCard.style.display = "none";
+
+            if (verrouilleCard) {
+                verrouilleCard.style.display = "block";
+                if (lockReservationId) lockReservationId.textContent = codeDossier;
+                if (lockNomClient) lockNomClient.textContent = res.nom || "Passager";
+                if (lockMontant) lockMontant.textContent = totalFormate;
+                if (btnLockPayerWave) btnLockPayerWave.href = `paiement.html?id=${res.id}`;
+
+                if (btnLockDebloquer) {
+                    btnLockDebloquer.addEventListener("click", async () => {
+                        btnLockDebloquer.disabled = true;
+                        btnLockDebloquer.textContent = "Validation et déblocage de votre pass...";
+
                         try {
-                            await fetch(`/api/reservations/${id}/confirmer-paiement`, {
+                            await fetch(`/api/reservations/${res.id}/confirmer-paiement`, {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" }
                             });
@@ -141,21 +157,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                         res.statut = "PAYÉ";
                         localStorage.setItem("reservation_data", JSON.stringify(res));
-                        window.location.reload();
+                        window.location.href = `recu.html?id=${res.id}&paid=1`;
                     });
                 }
             }
             return;
         }
 
-        // Si le statut est PAYÉ, s'assurer que le cache local le reflète
+        // =====================================================================
+        // ÉTAT PAYÉ & VALIDÉ : AFFICHAGE COMPLET DU PASS OFFICIEL
+        // =====================================================================
         res.statut = "PAYÉ";
         localStorage.setItem("reservation_data", JSON.stringify(res));
 
-        const pointLieu = res.point_rassemblement || POINTS_RASSEMBLEMENT_MAP[res.commune] || "Point de sa commune";
-        const codeDossier = `#PP-${String(res.id).padStart(4, "0")}`;
+        if (loadingEl) loadingEl.style.display = "none";
+        if (verrouilleCard) verrouilleCard.style.display = "none";
+        if (recuCard) recuCard.style.display = "block";
 
         if (elDossier) elDossier.textContent = codeDossier;
+        if (elNumTicket) elNumTicket.textContent = codeDossier;
         if (elNom) elNom.textContent = res.nom;
         if (elEmail) elEmail.textContent = res.email || "Non précisée";
         if (elTelephone) elTelephone.textContent = res.telephone;
@@ -174,7 +194,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             elQuantite.textContent = `${res.quantite} ${label}`;
         }
         if (elTotal) {
-            elTotal.textContent = `${Number(res.total).toLocaleString("fr-FR")} FCFA`;
+            elTotal.textContent = totalFormate;
         }
 
         if (elStatut) {
@@ -182,71 +202,63 @@ document.addEventListener("DOMContentLoaded", async () => {
             elStatut.className = "boarding-status-pill status-paid";
         }
 
-        // =====================================================================
-        // GÉNÉRATION DU QR CODE UNIQUE ET PROPRE AU TITULAIRE DU BILLET
-        // =====================================================================
+        // Génération du QR Code officiel avec métadonnées sécurisées
         if (elQRCode && typeof QRCode !== "undefined") {
             elQRCode.innerHTML = "";
 
-            // Données encodées dans le QR Code pour le contrôle et la vérification
             const qrData = JSON.stringify({
                 event: "CONVOI_PETIT_PARADIS_2026",
-                dossier: codeDossier,
-                titulaire: res.nom,
-                email: res.email || "",
+                ticket: codeDossier,
+                passager: res.nom,
                 tel: res.telephone,
                 commune: res.commune || "",
-                point_depart: pointLieu,
+                point_embarquement: pointLieu,
                 places: Number(res.quantite) || 1,
-                montant: `${Number(res.total).toLocaleString("fr-FR")} FCFA`,
+                montant: totalFormate,
                 statut: "VALIDE_WAVE",
-                date_convoi: "13/12/2026 08:30"
+                date_convoi: "Dimanche 13 Décembre 2026 à 08h30"
             });
 
             try {
                 new QRCode(elQRCode, {
                     text: qrData,
-                    width: 160,
-                    height: 160,
+                    width: 170,
+                    height: 170,
                     colorDark: "#100E10",
                     colorLight: "#FFFFFF",
                     correctLevel: QRCode.CorrectLevel.M
                 });
             } catch (qrErr) {
                 console.warn("Erreur génération QR Code :", qrErr);
-                // Fallback texte propre
-                elQRCode.innerHTML = `<div style="font-family: monospace; font-size: 11px; padding: 10px; background: #f3f3f3; border-radius: 8px;">${codeDossier} • VALIDE</div>`;
+                elQRCode.innerHTML = `<div style="font-family: monospace; font-size: 13px; font-weight: 800; padding: 12px; background: #FFFDF9; border: 1px solid #DCD3C5; border-radius: 8px;">${codeDossier} • VALIDE</div>`;
             }
         }
 
-        // Configurer le lien WhatsApp pour recevoir/sauvegarder une preuve
+        // WhatsApp Share link
         if (btnShareWhatsApp) {
             const msgWhatsApp = encodeURIComponent(
                 `Assalamu alaykum ! Voici mon pass officiel du convoi Petit Paradis :\n\n` +
-                `*PASS D'EMBARQUEMENT — CORA EVENTS*\n` +
-                `Dossier N° : ${codeDossier}\n` +
+                `*PASS D'EMBARQUEMENT OFFICIEL — CORA EVENTS*\n` +
+                `N° Ticket : ${codeDossier}\n` +
                 `Nom : ${res.nom}\n` +
                 (res.email ? `Email : ${res.email}\n` : '') +
                 `Téléphone : ${res.telephone}\n` +
                 `Commune : ${res.commune || 'Abidjan'}\n` +
-                `Point de départ : ${pointLieu}\n` +
-                `Places : ${res.quantite}\n` +
-                `Montant réglé : ${Number(res.total).toLocaleString("fr-FR")} FCFA\n` +
+                `Point d'embarquement : ${pointLieu}\n` +
+                `Nombre de places : ${res.quantite}\n` +
+                `Montant réglé : ${totalFormate}\n` +
                 `Règlement : Validé Wave (QR Code Certifié)\n` +
                 `Date de l'événement : Dimanche 13 Décembre 2026 à 08h30`
             );
             btnShareWhatsApp.href = `https://wa.me/2250105245225?text=${msgWhatsApp}`;
         }
 
-        if (loadingEl) loadingEl.style.display = "none";
-        if (containerEl) containerEl.style.display = "block";
-
     } catch (error) {
         console.error("Erreur chargement reçu :", error);
         if (loadingEl) {
             loadingEl.innerHTML = `
-                <div style="padding: 20px;">
-                    <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">On n'a pas réussi à charger votre pass. Réessayez dans un instant.</p>
+                <div style="padding: 10px;">
+                    <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">Erreur lors du chargement de votre pass. Réessayez dans un instant.</p>
                     <a href="index.html" class="btn-primary" style="display: inline-flex; font-size: 14px;">Retourner à l'accueil</a>
                 </div>
             `;
