@@ -954,26 +954,51 @@ button {
     background: var(--creme);
     border: 1px solid #DCD3C5;
     color: var(--texte-sombre);
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: var(--transition);
 }
 
-.qty-btn:hover {
+.qty-btn:hover,
+.qty-btn:active {
     background: var(--or-clair);
     color: var(--noir);
     border-color: var(--or);
 }
 
 .qty-display {
-    width: 60px;
+    width: 64px;
+    height: 44px;
+    line-height: 44px;
     text-align: center;
     font-family: 'Outfit', sans-serif;
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 800;
-    color: var(--texte-sombre);
+    color: var(--texte-sombre) !important;
+    background: #FFFDFB !important;
+    border: 1.5px solid #DCD3C5;
+    border-radius: var(--radius-md);
+    padding: 0 !important;
+    margin: 0;
+    outline: none;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    appearance: none;
+    -webkit-text-fill-color: var(--texte-sombre) !important;
+    opacity: 1 !important;
+}
+
+.qty-display::-webkit-outer-spin-button,
+.qty-display::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 /* Récapitulatif Total du Panier */
@@ -2711,9 +2736,23 @@ button {
         font-size: 40px;
     }
 
-    .form-input, input, select, textarea {
+    .form-input, input:not(.qty-display), select, textarea {
         font-size: 16px !important; /* Empêche le zoom auto sur smartphone */
         padding: 13px 14px 13px 44px;
+    }
+
+    .qty-display {
+        width: 64px !important;
+        height: 44px !important;
+        line-height: 44px !important;
+        padding: 0 !important;
+        font-size: 22px !important;
+        text-align: center !important;
+        color: var(--texte-sombre) !important;
+        -webkit-text-fill-color: var(--texte-sombre) !important;
+        background: #FFFDFB !important;
+        border: 1.5px solid #DCD3C5 !important;
+        opacity: 1 !important;
     }
 
     .price-summary-banner {
