@@ -3621,15 +3621,25 @@ button {
    ========================================================================== */
 @media print {
     @page {
-        margin: 10mm;
-        size: auto;
+        size: A4 portrait;
+        margin: 8mm;
     }
 
-    body {
+    *, *::before, *::after {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    html, body {
         background: #FFFFFF !important;
         padding: 0 !important;
         margin: 0 !important;
         color: #000000 !important;
+        overflow: visible !important;
+        height: auto !important;
+        min-height: 0 !important;
     }
 
     .scroll-progress-bar,
@@ -3638,17 +3648,45 @@ button {
     .site-footer,
     .btn-print-hide,
     .cursor-glow-orb,
-    .toast-notice {
+    .toast-notice,
+    #recuLoading,
+    #recuVerrouilleCard,
+    .admin-toolbar,
+    .admin-kpi-grid,
+    .action-btn-group {
         display: none !important;
     }
 
+    /* Annuler complètement les effets 3D et dégradés radiaux qui causent des fonds noirs */
+    .card-spotlight,
     .boarding-pass-card {
+        transform: none !important;
+        perspective: none !important;
+        transform-style: flat !important;
+        overflow: visible !important;
+        box-shadow: none !important;
+        filter: none !important;
+    }
+
+    .card-spotlight::before,
+    .card-spotlight::after,
+    .boarding-pass-card::before,
+    .boarding-pass-card::after {
+        display: none !important;
+        content: none !important;
+    }
+
+    #recuCard.boarding-pass-card,
+    .boarding-pass-card {
+        display: block !important;
+        visibility: visible !important;
         box-shadow: none !important;
         border: 2px solid #C59A44 !important;
         max-width: 100% !important;
         width: 100% !important;
         margin: 0 auto !important;
         page-break-inside: avoid !important;
+        break-inside: avoid !important;
         border-radius: 12px !important;
         background: #FFFFFF !important;
     }
@@ -3656,6 +3694,11 @@ button {
     .boarding-pass-head {
         background: #181517 !important;
         color: #FFFFFF !important;
+        border-bottom: 3px solid #C59A44 !important;
+        padding: 16px 20px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
@@ -3664,33 +3707,162 @@ button {
         color: #FFFFFF !important;
     }
 
+    .boarding-pass-body {
+        padding: 20px 24px !important;
+        background: #FFFFFF !important;
+        color: #000000 !important;
+    }
+
+    .ticket-highlight-box {
+        background: #FAF7F2 !important;
+        border: 1.5px solid #C59A44 !important;
+        padding: 12px 16px !important;
+        border-radius: 8px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .ticket-highlight-box span {
+        color: #555555 !important;
+        font-weight: 700 !important;
+    }
+
+    #recuNumTicket {
+        color: #5A0F24 !important;
+        font-size: 22px !important;
+        font-weight: 900 !important;
+    }
+
     .boarding-status-pill.status-paid {
         background: #DCFCE7 !important;
         color: #15803D !important;
-        border: 1px solid #15803D !important;
+        border: 1.5px solid #15803D !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        font-weight: 800 !important;
+    }
+
+    .boarding-grid-2 {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .boarding-info-block {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+    }
+
+    .boarding-info-block span {
+        color: #444444 !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+    }
+
+    .boarding-info-block strong {
+        color: #000000 !important;
+        font-size: 15px !important;
+        font-weight: 800 !important;
+    }
+
+    #recuNom {
+        color: #000000 !important;
+        font-size: 17px !important;
+        font-weight: 900 !important;
+    }
+
+    #recuTotal {
+        color: #000000 !important;
+        font-size: 18px !important;
+        font-weight: 900 !important;
+    }
+
+    #recuPoint {
+        color: #855C1B !important;
+        font-weight: 800 !important;
     }
 
     .route-arrow-flow {
         background: #FAF7F2 !important;
         border: 1px solid #C59A44 !important;
+        padding: 10px 14px !important;
+        margin: 10px 0 14px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
 
+    .flow-label {
+        color: #555555 !important;
+        font-size: 10.5px !important;
+    }
+
+    .flow-origin-name, .flow-dest-name {
+        color: #000000 !important;
+        font-weight: 800 !important;
+        font-size: 14px !important;
+    }
+
+    .flow-dest-name, .flow-arrow-indicator {
+        color: #855C1B !important;
+    }
+
     .ticket-qr-section {
         background: #FAF7F2 !important;
-        border: 1px dashed #9A7426 !important;
+        border: 1.5px dashed #9A7426 !important;
+        padding: 14px !important;
+        margin: 12px 0 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+    }
+
+    .ticket-qr-container {
+        display: flex !important;
+        align-items: center !important;
+        gap: 18px !important;
     }
 
     .ticket-qr-box {
         background: #FFFFFF !important;
         border: 2px solid #000000 !important;
+        padding: 8px !important;
+        min-width: 140px !important;
+        min-height: 140px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+    }
+
+    .ticket-qr-box canvas,
+    .ticket-qr-box img {
+        max-width: 130px !important;
+        height: auto !important;
+    }
+
+    .ticket-qr-meta {
+        color: #000000 !important;
+    }
+
+    .qr-secure-badge {
+        background: #DCFCE7 !important;
+        color: #15803D !important;
+        border: 1px solid #15803D !important;
+        font-weight: 800 !important;
+    }
+
+    #recuQRRef {
+        color: #000000 !important;
+        font-weight: 900 !important;
     }
 }
 

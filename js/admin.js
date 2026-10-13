@@ -386,11 +386,15 @@ document.addEventListener("DOMContentLoaded", () => {
                                 </button>
                             ` : ''}
 
-                            <a href="recu.html?id=${r.id}" target="_blank" class="btn-table-action btn-recu">
+                            <a href="recu.html?id=${r.id}&admin=1" target="_blank" class="btn-table-action btn-recu" title="Voir le pass d'embarquement">
                                 🎫 Pass
                             </a>
 
-                            <button type="button" class="btn-table-action btn-supprimer" onclick="supprimerReservation(${r.id}, '${r.nom.replace(/'/g, "\\'")}')">
+                            <a href="recu.html?id=${r.id}&admin=1&print=1" target="_blank" class="btn-table-action btn-valider" style="background: rgba(197, 154, 68, 0.15); color: var(--or-fonce); border-color: var(--or);" title="Imprimer directement le ticket">
+                                🖨️
+                            </a>
+
+                            <button type="button" class="btn-table-action btn-supprimer" onclick="supprimerReservation(${r.id}, '${r.nom.replace(/'/g, "\\'")}')" title="Supprimer la réservation">
                                 🗑️
                             </button>
                         </div>
@@ -440,6 +444,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await res.json();
 
             if (data.success) {
+                try {
+                    const dataLocale = localStorage.getItem("reservation_data");
+                    if (dataLocale) {
+                        const parsed = JSON.parse(dataLocale);
+                        if (String(parsed.id) === String(id)) {
+                            parsed.statut = "PAYÉ";
+                            localStorage.setItem("reservation_data", JSON.stringify(parsed));
+                        }
+                    }
+                } catch (e) {}
+
                 notifier(`C'est validé ! Réservation #${id} confirmée.`, "success");
                 chargerReservations();
             } else {

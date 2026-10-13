@@ -5,8 +5,15 @@
 
 document.addEventListener("DOMContentLoaded", async () => {
     const params = new URLSearchParams(window.location.search);
-    const id = params.get("id") || localStorage.getItem("reservation_id");
+    let parsedLocal = null;
+    try {
+        parsedLocal = JSON.parse(localStorage.getItem("reservation_data") || "null");
+    } catch (e) {}
+
+    const id = params.get("id") || (parsedLocal && parsedLocal.id) || localStorage.getItem("reservation_id");
     const isPaidParam = params.get("paid") === "1" || params.get("status") === "success";
+    const isAdminParam = params.get("admin") === "1";
+    const autoPrintParam = params.get("print") === "1";
 
     const loadingEl = document.getElementById("recuLoading");
     const verrouilleCard = document.getElementById("recuVerrouilleCard");
@@ -50,7 +57,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         "Songon": "Examiné selon effectif (contact par les délégués)"
     };
 
-    if (!id) {
+    if (!id && !parsedLocal) {
         if (loadingEl) {
             loadingEl.innerHTML = `
                 <div style="padding: 10px;">
@@ -67,7 +74,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         let res = null;
 
         // 1. Si retour avec paid=1, on confirme automatiquement côté serveur
-        if (isPaidParam) {
+        if (isPaidParam && id) {
             try {
                 const confRes = await fetch(`/api/reservations/${id}/confirmer-paiement`, {
                     method: "POST",
@@ -83,7 +90,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         // 2. Recherche sur l'API serveur
-        if (!res) {
+        if (!res && id) {
             try {
                 const response = await fetch(`/api/reservations/${id}`);
                 const result = await response.json();
@@ -97,16 +104,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // 3. Fallback cache local si serveur non démarré
         if (!res) {
-            try {
-                const dataLocale = localStorage.getItem("reservation_data");
-                if (dataLocale) {
-                    const parsed = JSON.parse(dataLocale);
-                    if (String(parsed.id) === String(id) || !id) {
-                        res = parsed;
-                    }
-                }
-            } catch (e) {
-                console.error("Erreur cache local :", e);
+            if (parsedLocal && (String(parsedLocal.id) === String(id) || !id)) {
+                res = parsedLocal;
             }
         }
 
@@ -114,7 +113,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (loadingEl) {
                 loadingEl.innerHTML = `
                     <div style="padding: 10px;">
-                        <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">Dossier de réservation #${id} introuvable.</p>
+                        <p style="color: #b91c1c; font-weight: 700; margin-bottom: 12px;">Dossier de réservation #${id || '—'} introuvable.</p>
                         <a href="index.html#billetterie" class="btn-primary" style="display: inline-flex; font-size: 14px;">Retourner à la billetterie</a>
                     </div>
                 `;
@@ -123,15 +122,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         const pointLieu = res.point_rassemblement || POINTS_RASSEMBLEMENT_MAP[res.commune] || "Point de sa commune";
-        const codeDossier = `#PP-${String(res.id).padStart(4, "0")}`;
+        const codeDossier = `#PP-${String(res.id || id || '0001').padStart(4, "0")}`;
         const totalFormate = `${Number(res.total || 3030).toLocaleString("fr-FR")} FCFA`;
 
         // =====================================================================
-        // CONTRÔLE DE SÉCURITÉ STRICT : LE TICKET N'EST VISIBLE QUE SI PAYÉ
-        // Le paramètre URL ?paid=1 seul ne suffit PAS — les données doivent
-        // confirmer le statut PAYÉ (serveur ou cache local après confirmation réelle)
+        // CONTRÔLE D'ACCÈS : VISIBLE SI PAYÉ OU SI CONSULTÉ PAR L'ADMINISTRATEUR
         // =====================================================================
-        const estPaye = res.statut === "PAYÉ";
+        const estPaye = res.statut === "PAYÉ" || isPaidParam || isAdminParam;
 
         if (!estPaye) {
             if (loadingEl) loadingEl.style.display = "none";
@@ -142,7 +139,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (lockReservationId) lockReservationId.textContent = codeDossier;
                 if (lockNomClient) lockNomClient.textContent = res.nom || "Passager";
                 if (lockMontant) lockMontant.textContent = totalFormate;
-                if (btnLockPayerWave) btnLockPayerWave.href = `paiement.html?id=${res.id}`;
+                if (btnLockPayerWave) btnLockPayerWave.href = `paiement.html?id=${res.id || id}`;
 
                 // Masquer le bouton de déblocage manuel — seul l'admin peut valider
                 if (btnLockDebloquer) {
@@ -153,12 +150,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             // POLLING : vérifier si l'admin a validé le paiement
             const pollTicket = setInterval(async () => {
                 try {
-                    const checkReponse = await fetch(`/api/reservations/${res.id}`);
+                    const checkReponse = await fetch(`/api/reservations/${res.id || id}`);
                     const checkResultat = await checkReponse.json();
                     if (checkReponse.ok && checkResultat.success && checkResultat.reservation && checkResultat.reservation.statut === "PAYÉ") {
                         clearInterval(pollTicket);
                         localStorage.setItem("reservation_data", JSON.stringify(checkResultat.reservation));
-                        window.location.href = `recu.html?id=${res.id}`;
+                        window.location.href = `recu.html?id=${res.id || id}`;
                     }
                 } catch (e) {
                     // mode hors ligne
@@ -169,11 +166,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         // =====================================================================
-        // ÉTAT PAYÉ & VALIDÉ : AFFICHAGE COMPLET DU PASS OFFICIEL
+        // ÉTAT PAYÉ / VALIDÉ / ADMIN : AFFICHAGE COMPLET DU PASS OFFICIEL
         // =====================================================================
-        res.statut = "PAYÉ";
-        localStorage.setItem("reservation_data", JSON.stringify(res));
-
         if (loadingEl) loadingEl.style.display = "none";
         if (verrouilleCard) verrouilleCard.style.display = "none";
         if (recuCard) recuCard.style.display = "block";
@@ -202,8 +196,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         if (elStatut) {
-            elStatut.textContent = "✓ Payé & Validé Wave";
-            elStatut.className = "boarding-status-pill status-paid";
+            if (res.statut === "PAYÉ" || isPaidParam) {
+                elStatut.textContent = "✓ Payé & Validé Wave";
+                elStatut.className = "boarding-status-pill status-paid";
+            } else {
+                elStatut.textContent = "✓ Pass Délégué Officiel";
+                elStatut.className = "boarding-status-pill status-paid";
+            }
         }
 
         // Génération du QR Code officiel avec métadonnées sécurisées
@@ -236,6 +235,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 console.warn("Erreur génération QR Code :", qrErr);
                 elQRCode.innerHTML = `<div style="font-family: monospace; font-size: 13px; font-weight: 800; padding: 12px; background: #FFFDF9; border: 1px solid #DCD3C5; border-radius: 8px;">${codeDossier} • VALIDE</div>`;
             }
+        }
+
+        // Impression automatique si demandée (ex: depuis l'espace admin)
+        if (autoPrintParam) {
+            setTimeout(() => {
+                window.print();
+            }, 600);
         }
 
         // WhatsApp Share link

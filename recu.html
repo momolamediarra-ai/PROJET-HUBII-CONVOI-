@@ -37,9 +37,223 @@
                 align-items: flex-start;
             }
         }
+
+        /* --- STYLES D'IMPRESSION HAUTE DÉFINITION DU TICKET --- */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 8mm;
+            }
+
+            *, *::before, *::after {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                box-shadow: none !important;
+                text-shadow: none !important;
+            }
+
+            html, body {
+                background: #FFFFFF !important;
+                color: #000000 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+                height: auto !important;
+                min-height: 0 !important;
+            }
+
+            .scroll-progress-bar,
+            .ambient-glow,
+            .site-header,
+            .site-footer,
+            .btn-print-hide,
+            .cursor-glow-orb,
+            .toast-notice,
+            #recuLoading,
+            #recuVerrouilleCard {
+                display: none !important;
+            }
+
+            #recuCard.boarding-pass-card {
+                display: block !important;
+                visibility: visible !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                margin: 0 auto !important;
+                border: 2px solid #C59A44 !important;
+                border-radius: 12px !important;
+                background: #FFFFFF !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                transform: none !important;
+                overflow: visible !important;
+            }
+
+            .boarding-pass-head {
+                background: #181517 !important;
+                color: #FFFFFF !important;
+                padding: 16px 20px !important;
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                border-bottom: 3px solid #C59A44 !important;
+            }
+
+            .boarding-pass-head h2,
+            .boarding-pass-head strong,
+            .boarding-pass-head span {
+                color: #FFFFFF !important;
+            }
+
+            .boarding-pass-body {
+                padding: 20px 24px !important;
+                background: #FFFFFF !important;
+                color: #000000 !important;
+            }
+
+            .ticket-highlight-box {
+                background: #FAF7F2 !important;
+                border: 1.5px solid #C59A44 !important;
+                padding: 12px 16px !important;
+                border-radius: 8px !important;
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+            }
+
+            .ticket-highlight-box span {
+                color: #555555 !important;
+                font-weight: 700 !important;
+            }
+
+            #recuNumTicket {
+                color: #5A0F24 !important;
+                font-size: 22px !important;
+                font-weight: 900 !important;
+            }
+
+            .boarding-status-pill.status-paid {
+                background: #DCFCE7 !important;
+                color: #15803D !important;
+                border: 1.5px solid #15803D !important;
+                font-weight: 800 !important;
+            }
+
+            .boarding-grid-2 {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 12px !important;
+                margin-bottom: 12px !important;
+            }
+
+            .boarding-info-block {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 2px !important;
+            }
+
+            .boarding-info-block span {
+                color: #444444 !important;
+                font-size: 11px !important;
+                font-weight: 700 !important;
+                text-transform: uppercase !important;
+            }
+
+            .boarding-info-block strong {
+                color: #000000 !important;
+                font-size: 15px !important;
+                font-weight: 800 !important;
+            }
+
+            #recuNom {
+                color: #000000 !important;
+                font-size: 17px !important;
+                font-weight: 900 !important;
+            }
+
+            #recuPoint {
+                color: #855C1B !important;
+                font-weight: 800 !important;
+            }
+
+            .route-arrow-flow {
+                background: #FAF7F2 !important;
+                border: 1px solid #C59A44 !important;
+                padding: 10px 14px !important;
+                margin: 10px 0 14px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+            }
+
+            .flow-label {
+                color: #555555 !important;
+                font-size: 10.5px !important;
+            }
+
+            .flow-origin-name, .flow-dest-name {
+                color: #000000 !important;
+                font-weight: 800 !important;
+                font-size: 14px !important;
+            }
+
+            .flow-dest-name {
+                color: #855C1B !important;
+            }
+
+            .flow-arrow-indicator {
+                color: #855C1B !important;
+            }
+
+            .ticket-qr-section {
+                background: #FAF7F2 !important;
+                border: 1.5px dashed #9A7426 !important;
+                padding: 14px !important;
+                margin: 12px 0 !important;
+            }
+
+            .ticket-qr-container {
+                display: flex !important;
+                align-items: center !important;
+                gap: 18px !important;
+            }
+
+            .ticket-qr-box {
+                background: #FFFFFF !important;
+                border: 2px solid #000000 !important;
+                padding: 8px !important;
+                min-width: 140px !important;
+                min-height: 140px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            .ticket-qr-box canvas,
+            .ticket-qr-box img {
+                max-width: 130px !important;
+                height: auto !important;
+            }
+
+            .ticket-qr-meta {
+                color: #000000 !important;
+            }
+
+            .qr-secure-badge {
+                background: #DCFCE7 !important;
+                color: #15803D !important;
+                border: 1px solid #15803D !important;
+                font-weight: 800 !important;
+            }
+
+            #recuQRRef {
+                color: #000000 !important;
+                font-weight: 900 !important;
+            }
+        }
     </style>
 </head>
-<body style="background: #F4EFE6; padding: 30px 16px; position: relative; overflow-x: hidden;">
+<body style="background: #F4EFE6; padding: 30px 16px; position: relative;">
     <!-- Barre de Progression de Scroll -->
     <div class="scroll-progress-bar" id="scrollProgressBar"></div>
 
@@ -83,7 +297,7 @@
     </div>
 
     <!-- 3. ÉTAT PAYÉ : CARTE PASS D'EMBARQUEMENT OFFICIEL (Affiché uniquement si PAYÉ) -->
-    <div id="recuCard" class="boarding-pass-card card-spotlight" style="display: none;">
+    <div id="recuCard" class="boarding-pass-card" style="display: none;">
         
         <!-- En-tête du Billet -->
         <div class="boarding-pass-head">
