@@ -127,10 +127,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         const totalFormate = `${Number(res.total || 3030).toLocaleString("fr-FR")} FCFA`;
 
         // =====================================================================
-        // CONTRÔLE DE SÉCURITÉ : TANT QUE LE PAIEMENT N'EST PAS FAIT
-        // LE BILLET OFFICIEL EST COMPLÈTEMENT VERROUILLÉ
+        // CONTRÔLE DE SÉCURITÉ STRICT : LE TICKET N'EST VISIBLE QUE SI PAYÉ
+        // Le paramètre URL ?paid=1 seul ne suffit PAS — les données doivent
+        // confirmer le statut PAYÉ (serveur ou cache local après confirmation réelle)
         // =====================================================================
-        const estPaye = res.statut === "PAYÉ" || isPaidParam;
+        const estPaye = res.statut === "PAYÉ";
 
         if (!estPaye) {
             if (loadingEl) loadingEl.style.display = "none";
@@ -143,24 +144,27 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (lockMontant) lockMontant.textContent = totalFormate;
                 if (btnLockPayerWave) btnLockPayerWave.href = `paiement.html?id=${res.id}`;
 
+                // Masquer le bouton de déblocage manuel — seul l'admin peut valider
                 if (btnLockDebloquer) {
-                    btnLockDebloquer.addEventListener("click", async () => {
-                        btnLockDebloquer.disabled = true;
-                        btnLockDebloquer.textContent = "Validation et déblocage de votre pass...";
-
-                        try {
-                            await fetch(`/api/reservations/${res.id}/confirmer-paiement`, {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" }
-                            });
-                        } catch (e) {}
-
-                        res.statut = "PAYÉ";
-                        localStorage.setItem("reservation_data", JSON.stringify(res));
-                        window.location.href = `recu.html?id=${res.id}&paid=1`;
-                    });
+                    btnLockDebloquer.style.display = "none";
                 }
             }
+
+            // POLLING : vérifier si l'admin a validé le paiement
+            const pollTicket = setInterval(async () => {
+                try {
+                    const checkReponse = await fetch(`/api/reservations/${res.id}`);
+                    const checkResultat = await checkReponse.json();
+                    if (checkReponse.ok && checkResultat.success && checkResultat.reservation && checkResultat.reservation.statut === "PAYÉ") {
+                        clearInterval(pollTicket);
+                        localStorage.setItem("reservation_data", JSON.stringify(checkResultat.reservation));
+                        window.location.href = `recu.html?id=${res.id}`;
+                    }
+                } catch (e) {
+                    // mode hors ligne
+                }
+            }, 4000);
+
             return;
         }
 

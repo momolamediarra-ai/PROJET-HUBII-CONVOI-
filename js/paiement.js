@@ -115,75 +115,58 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (clientTotal) clientTotal.textContent = totalFormate;
     if (btnWaveMontant) btnWaveMontant.textContent = totalFormate;
 
-    // Si la réservation est déjà PAYÉ → rediriger directement
+    // Si la réservation est déjà PAYÉ côté serveur → rediriger directement
     if (reservation.statut === "PAYÉ") {
-        window.location.href = `recu.html?id=${reservation.id}&paid=1`;
+        window.location.href = `recu.html?id=${reservation.id}`;
         return;
     }
 
     // =========================================================================
-    // FLUX SIMPLIFIÉ : CLIC WAVE → OUVRE WAVE → REDIRIGE VERS TICKET
+    // ÉTAPE 1 : CLIC SUR "PAYER AVEC WAVE" → OUVRE WAVE UNIQUEMENT
+    // Le ticket n'est débloqué QUE si l'utilisateur confirme après paiement réel
     // =========================================================================
-    function redirectVersTicket() {
-        // Marque le paiement en local
-        reservation.statut = "PAYÉ";
-        localStorage.setItem("reservation_data", JSON.stringify(reservation));
-        localStorage.setItem("reservation_id", reservation.id);
+    let waveAEteOuvert = false;
 
-        // Appel serveur silencieux (ne bloque pas la redirection)
-        fetch(`/api/reservations/${reservation.id}/confirmer-paiement`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" }
-        }).catch(() => {});
-
-        // Redirection directe vers le ticket officiel
-        window.location.href = `recu.html?id=${reservation.id}&paid=1`;
-    }
-
-    // Si l'URL contient ?paid=1 (retour direct)
-    if (isPaidParam) {
-        redirectVersTicket();
-        return;
-    }
-
-    // Clic sur "Payer avec Wave"
     if (btnWavePaiement) {
         btnWavePaiement.addEventListener("click", () => {
-            // Afficher le spinner de redirection
-            if (waveRedirectNotice) waveRedirectNotice.style.display = "block";
-
-            // Désactiver le bouton pour éviter double-clic
-            btnWavePaiement.disabled = true;
-            btnWavePaiement.style.opacity = "0.6";
+            waveAEteOuvert = true;
 
             // Ouvrir Wave sur le téléphone / navigateur
             const urlWave = obtenirLienPaiementWave();
             window.open(urlWave, "_blank");
 
-            // Redirection automatique vers le ticket après 2 secondes
-            setTimeout(() => {
-                redirectVersTicket();
-            }, 2000);
+            // Afficher le message + bouton de confirmation (apparaît seulement après clic Wave)
+            if (waveRedirectNotice) waveRedirectNotice.style.display = "block";
         });
     }
 
-    // Polling discret : si le serveur confirme le paiement, rediriger vers le ticket
+    // =========================================================================
+    // POLLING : ATTENTE DE LA VALIDATION PAR L'ADMINISTRATEUR
+    // Le client NE PEUT PAS auto-valider — seul l'admin peut changer le statut
+    // =========================================================================
     const pollInterval = setInterval(async () => {
-        if (reservation && reservation.statut === "PAYÉ") {
-            clearInterval(pollInterval);
-            return;
-        }
-
         try {
             const reponse = await fetch(`/api/reservations/${reservationId}`);
             const resultat = await reponse.json();
 
             if (reponse.ok && resultat.success && resultat.reservation && resultat.reservation.statut === "PAYÉ") {
                 clearInterval(pollInterval);
-                window.location.href = `recu.html?id=${reservationId}&paid=1`;
+
+                // L'admin a validé → mettre à jour le cache local et rediriger
+                localStorage.setItem("reservation_data", JSON.stringify(resultat.reservation));
+                
+                // Feedback visuel avant la redirection
+                const pollingMsg = document.getElementById("pollingStatusMsg");
+                if (pollingMsg) {
+                    pollingMsg.innerHTML = `<span style="color: #22C55E; font-size: 15px; font-weight: 800;">✅ Paiement validé ! Redirection vers votre ticket…</span>`;
+                }
+
+                setTimeout(() => {
+                    window.location.href = `recu.html?id=${reservationId}`;
+                }, 1500);
             }
         } catch (e) {
-            // mode hors ligne
+            // mode hors ligne — on continue le polling
         }
     }, 4000);
 });

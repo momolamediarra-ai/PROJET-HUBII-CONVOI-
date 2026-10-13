@@ -15,6 +15,10 @@
             from { opacity: 0; transform: translateY(6px); }
             to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
     </style>
 </head>
 
@@ -170,7 +174,7 @@
                     ⚠️ <strong>Note :</strong> Aucun remboursement n'est possible après validation du paiement.
                 </div>
 
-                <!-- Bouton unique : Payer avec Wave → Redirection automatique sur le ticket -->
+                <!-- Bouton unique : Payer avec Wave -->
                 <button type="button" id="btnWavePaiement" class="btn-primary wave-btn-checkout">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -180,14 +184,41 @@
                     <span>Payer avec Wave</span> — <span id="btnWaveMontant">0 FCFA</span>
                 </button>
 
-                <!-- Message de chargement affiché pendant la redirection -->
-                <div id="waveRedirectNotice" style="display: none; margin-top: 18px; text-align: center; font-size: 14px; color: #4ADE80; animation: fadeIn 0.4s ease;">
-                    <div style="font-size: 28px; margin-bottom: 8px;">🌊</div>
-                    <strong>Wave ouvert sur votre téléphone...</strong><br>
-                    <span style="color: #E5E0D8; font-size: 13px;">Vous serez redirigé vers votre ticket dans un instant.</span>
-                    <div style="margin-top: 12px;">
-                        <div style="display: inline-block; width: 28px; height: 28px; border: 3px solid #1DC4FE; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                <!-- Zone qui s'affiche UNIQUEMENT après avoir cliqué sur Wave -->
+                <div id="waveRedirectNotice" style="display: none; margin-top: 20px; animation: fadeIn 0.4s ease;">
+                    <!-- Info : Wave ouvert -->
+                    <div style="background: rgba(29, 196, 254, 0.1); border: 1px dashed #1DC4FE; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; text-align: left;">
+                        <div style="display: flex; align-items: flex-start; gap: 10px;">
+                            <span style="font-size: 22px;">🌊</span>
+                            <div>
+                                <strong style="color: #1DC4FE; font-size: 14px;">Wave est ouvert sur votre téléphone</strong><br>
+                                <span style="color: #D3CAD0; font-size: 13px; line-height: 1.5;">
+                                    Complétez votre paiement sur Wave.
+                                </span>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- Message d'attente de validation admin -->
+                    <div style="background: rgba(251, 191, 36, 0.12); border: 1px dashed #FBBF24; border-radius: 12px; padding: 18px 16px; text-align: center;">
+                        <div style="font-size: 36px; margin-bottom: 8px;">⏳</div>
+                        <strong style="color: #FBBF24; font-size: 16px; display: block; margin-bottom: 8px;">
+                            En attente de validation
+                        </strong>
+                        <p style="color: #D3CAD0; font-size: 13px; line-height: 1.6; margin: 0 0 12px;">
+                            Après votre paiement sur Wave, <strong style="color: #FFF;">un administrateur CORA EVENTS vérifiera votre paiement</strong> 
+                            et vous enverra votre ticket officiel.<br>
+                            Vous recevrez une notification dès que votre billet sera disponible.
+                        </p>
+                        <div id="pollingStatusMsg" style="display: flex; align-items: center; justify-content: center; gap: 8px; color: #FBBF24; font-size: 13px; font-weight: 700;">
+                            <span class="polling-dot" style="width: 8px; height: 8px; background: #FBBF24; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite;"></span>
+                            Vérification automatique en cours…
+                        </div>
+                    </div>
+
+                    <p style="font-size: 12px; color: var(--texte-clair-muet); margin-top: 14px; text-align: center; line-height: 1.4;">
+                        💡 Gardez cette page ouverte — vous serez redirigé automatiquement vers votre ticket dès validation.
+                    </p>
                 </div>
 
                 <div
