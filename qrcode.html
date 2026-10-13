@@ -202,7 +202,10 @@
 
             inputUrl.addEventListener("input", (e) => {
                 const url = e.target.value.trim();
-                if (url) genererQRCode(url);
+                if (url) {
+                    genererQRCode(url);
+                    localStorage.setItem("cora_site_url", url);
+                }
             });
 
             btnPresetSite.addEventListener("click", () => {

@@ -205,26 +205,27 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         }
 
-        // Génération du QR Code officiel avec métadonnées sécurisées
+        // Génération du QR Code officiel : lien web direct vers le billet
         if (elQRCode && typeof QRCode !== "undefined") {
             elQRCode.innerHTML = "";
 
-            const qrData = JSON.stringify({
-                event: "CONVOI_PETIT_PARADIS_2026",
-                ticket: codeDossier,
-                passager: res.nom,
-                tel: res.telephone,
-                commune: res.commune || "",
-                point_embarquement: pointLieu,
-                places: Number(res.quantite) || 1,
-                montant: totalFormate,
-                statut: "VALIDE_WAVE",
-                date_convoi: "Dimanche 13 Décembre 2026 à 08h30"
-            });
+            let baseSiteUrl = "";
+            const hostActuel = window.location.host;
+            const protoActuel = window.location.protocol;
+
+            // Si le site tourne sur un vrai serveur HTTP/HTTPS en ligne
+            if (protoActuel.startsWith("http") && !hostActuel.includes("localhost") && !hostActuel.includes("127.0.0.1")) {
+                baseSiteUrl = window.location.origin;
+            } else {
+                // Domaine configuré ou domaine officiel du convoi
+                baseSiteUrl = localStorage.getItem("cora_site_url") || "https://coraevents.ci";
+            }
+
+            const qrUrl = `${baseSiteUrl.replace(/\/$/, "")}/recu.html?id=${res.id || id}`;
 
             try {
                 new QRCode(elQRCode, {
-                    text: qrData,
+                    text: qrUrl,
                     width: 170,
                     height: 170,
                     colorDark: "#100E10",
