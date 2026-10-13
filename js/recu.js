@@ -225,13 +225,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                     text: qrUrl,
                     width: 170,
                     height: 170,
+                    typeNumber: 0,
                     colorDark: "#100E10",
                     colorLight: "#FFFFFF",
                     correctLevel: QRCode.CorrectLevel.M
                 });
             } catch (qrErr) {
                 console.warn("Erreur génération QR Code :", qrErr);
-                elQRCode.innerHTML = `<div style="font-family: monospace; font-size: 13px; font-weight: 800; padding: 12px; background: #FFFDF9; border: 1px solid #DCD3C5; border-radius: 8px;">${codeDossier} • VALIDE</div>`;
+                elQRCode.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=${encodeURIComponent(qrUrl)}" alt="QR Code ${codeDossier}" style="width: 150px; height: 150px; display: block; margin: 0 auto; border-radius: 4px;" onerror="this.outerHTML='<div style=\\'font-family: monospace; font-size: 13px; font-weight: 800; padding: 12px; background: #FFFDF9; border: 1px solid #DCD3C5; border-radius: 8px;\\'>${codeDossier} • VALIDE</div>'" />`;
             }
         }
 
