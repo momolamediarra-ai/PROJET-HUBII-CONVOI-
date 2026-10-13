@@ -209,16 +209,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (elQRCode && typeof QRCode !== "undefined") {
             elQRCode.innerHTML = "";
 
-            let baseSiteUrl = "";
+            let baseSiteUrl = localStorage.getItem("cora_site_url") || "https://convoi-petit-paris.store";
             const hostActuel = window.location.host;
             const protoActuel = window.location.protocol;
 
             // Si le site tourne sur un vrai serveur HTTP/HTTPS en ligne
             if (protoActuel.startsWith("http") && !hostActuel.includes("localhost") && !hostActuel.includes("127.0.0.1")) {
                 baseSiteUrl = window.location.origin;
-            } else {
-                // Domaine configuré ou domaine officiel du convoi
-                baseSiteUrl = localStorage.getItem("cora_site_url") || "https://coraevents.ci";
             }
 
             const qrUrl = `${baseSiteUrl.replace(/\/$/, "")}/recu.html?id=${res.id || id}`;

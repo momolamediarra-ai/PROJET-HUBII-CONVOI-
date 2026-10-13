@@ -176,7 +176,7 @@
             // URL par défaut : l'URL actuelle du site ou fallback
             const defaultSiteUrl = (window.location.origin && window.location.origin !== "null" && !window.location.origin.startsWith("file:"))
                 ? window.location.origin + window.location.pathname.replace("qrcode.html", "index.html")
-                : "https://coraevents.ci";
+                : (localStorage.getItem("cora_site_url") || "https://convoi-petit-paris.store");
 
             const waveUrl = "https://pay.wave.com/m/M_ci_h9hZMaHf2uuM/c/ci/?amount=3030";
             const whatsappUrl = "https://wa.me/2250105245225?text=Bonjour%20CORA%20EVENTS,%20je%20souhaite%20des%20informations%20sur%20le%20convoi.";

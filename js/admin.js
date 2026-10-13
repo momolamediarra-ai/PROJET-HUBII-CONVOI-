@@ -441,8 +441,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnConfigSiteUrl = document.getElementById("btnConfigSiteUrl");
     if (btnConfigSiteUrl) {
         btnConfigSiteUrl.addEventListener("click", () => {
-            const actuel = localStorage.getItem("cora_site_url") || (window.location.protocol.startsWith("http") && !window.location.host.includes("localhost") ? window.location.origin : "https://coraevents.ci");
-            const nouveau = prompt("Entrez l'adresse en ligne de votre site web pour que les QR Codes scannés dirigent dessus (ex: https://votre-site.vercel.app ou https://coraevents.ci) :", actuel);
+            const actuel = localStorage.getItem("cora_site_url") || (window.location.protocol.startsWith("http") && !window.location.host.includes("localhost") ? window.location.origin : "https://convoi-petit-paris.store");
+            const nouveau = prompt("Entrez l'adresse en ligne de votre site web pour les QR Codes :", actuel);
             if (nouveau && nouveau.trim()) {
                 let urlClean = nouveau.trim();
                 if (!urlClean.startsWith("http://") && !urlClean.startsWith("https://")) {
